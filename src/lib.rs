@@ -1,14 +1,56 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+use winit::{
+    application::ApplicationHandler,
+    event::{self, WindowEvent},
+    event_loop::{self, ActiveEventLoop, ControlFlow, EventLoop},
+    keyboard::PhysicalKey,
+    window::{ResizeDirection, Window, WindowAttributes, WindowId},
+};
+
+pub mod prelude {
+    pub use crate::Piece;
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub struct Piece {
+    window: Option<Window>,
+}
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+impl Piece {
+    pub fn new() -> Piece {
+        Piece { window: None }
+    }
+
+    pub fn run(&mut self) {
+        let event_loop = EventLoop::new().unwrap();
+        match event_loop.run_app(self) {
+            Ok(_) => {
+                println!("See you next time...")
+            }
+            Err(e) => println!("{e}"),
+        }
+    }
+}
+
+impl ApplicationHandler for Piece {
+    fn resumed(&mut self, event_loop: &ActiveEventLoop) {
+        self.window = Some(
+            event_loop
+                .create_window(Window::default_attributes())
+                .unwrap(),
+        );
+    }
+
+    fn window_event(
+        &mut self,
+        event_loop: &ActiveEventLoop,
+        _window_id: WindowId,
+        event: WindowEvent,
+    ) {
+        match event {
+            WindowEvent::CloseRequested => {
+                event_loop.exit();
+            }
+            WindowEvent::RedrawRequested => self.window.as_ref().unwrap().request_redraw(),
+            _ => (),
+        }
     }
 }

@@ -22,16 +22,16 @@
           rustToolchain = pkgs.pkgsBuildHost.rust-bin.selectLatestNightlyWith (toolchain: toolchain.default);
           nativeBuildInputs = with pkgs; [ rustToolchain pkg-config ];
           buildInputs = with pkgs; [ 
-            xorg.libX11
-            xorg.libXcursor
-            xorg.libXrandr
-            xorg.libXi
+            libxkbcommon
+            libGL
+            wayland
           ];
         in
         with pkgs;
         {
           devShells.default = mkShell {
             inherit buildInputs nativeBuildInputs;
+            LD_LIBRARY_PATH = "${lib.makeLibraryPath buildInputs}";
             shellHook = ''
               echo "entering dioxus-pod devshell..."
             '';
