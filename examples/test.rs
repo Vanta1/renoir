@@ -3,7 +3,7 @@
 use renoired::prelude::*;
 
 fn main() {
-    let mut first_piece = Piece::new();
+    let mut first_piece = RenoiredApp::new();
 
     first_piece.run()
 }
