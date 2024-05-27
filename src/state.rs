@@ -4,12 +4,14 @@ use winit::window::Window;
 use crate::input::RenoiredInput;
 use crate::time::DeltaTime;
 
-pub struct Flow { should_close: bool }
+pub struct Flow {
+    should_close: bool,
+}
 
 impl Flow {
     pub fn new() -> Self {
         Flow {
-            should_close: false
+            should_close: false,
         }
     }
 

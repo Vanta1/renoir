@@ -7,11 +7,9 @@ pub struct DeltaTime {
 
 impl DeltaTime {
     pub fn new() -> Self {
-        let prev_time = Instant::now();
-
         Self {
             delta_time: 0.,
-            prev_time,
+            prev_time: Instant::now(),
         }
     }
 
