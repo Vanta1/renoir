@@ -33,7 +33,7 @@
             inherit buildInputs nativeBuildInputs;
             LD_LIBRARY_PATH = "${lib.makeLibraryPath buildInputs}";
             shellHook = ''
-              echo "entering dioxus-pod devshell..."
+              echo "entering renoired devshell..."
             '';
           };
         }
