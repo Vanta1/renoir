@@ -11,21 +11,23 @@ mod input;
 mod render;
 mod state;
 mod time;
+mod macros;
 
 use input::RenoiredInput;
 use render::renderer::Renderer;
-use state::RenoiredAppState;
+use state::{Flow, RenoiredAppState};
 
 pub mod prelude {
 	pub use crate::input::Key;
 	pub use crate::RenoiredApp;
+	pub use crate::alias;
 }
 
 pub type GameLoop = Box<dyn FnMut(&mut RenoiredAppState)>;
 
 pub struct RenoiredApp {
 	renderer: Option<Renderer<'static>>,
-	state: RenoiredAppState,
+	pub state: RenoiredAppState,
 	run_fn: Option<GameLoop>,
 }
 
@@ -38,7 +40,7 @@ impl RenoiredApp {
 				window: None,
 				input: RenoiredInput::new(),
 				time: DeltaTime::new(),
-				should_close: false,
+				flow: Flow::new(),
 			},
 		}
 	}
@@ -96,7 +98,7 @@ impl ApplicationHandler for RenoiredApp {
 				// Run the user's main function
 				self.run_fn.as_mut().unwrap()(&mut self.state);
 				// if after running the main function the user has decided the application should close, close it.
-				if self.state.should_close {
+				if self.state.flow.should_close() {
 					event_loop.exit()
 				}
 				
