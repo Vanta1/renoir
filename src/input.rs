@@ -94,9 +94,7 @@ impl RenoiredInput {
         self.mouse.cursor_delta = (0.0, 0.0);
         self.mouse.scroll_delta = (0.0, 0.0);
 
-        for key in 0..self.keys.len() {
-            self.keys[key].update();
-        }
+        self.keys.iter_mut().for_each(|key| { key.update(); });
     }
 
     pub(crate) fn set_key(&mut self, input: winit::event::KeyEvent) {
