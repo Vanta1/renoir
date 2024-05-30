@@ -2,7 +2,7 @@ use std::sync::Arc;
 use time::DeltaTime;
 use winit::{
     application::ApplicationHandler,
-    event::{DeviceEvent, MouseScrollDelta, WindowEvent},
+    event::{DeviceEvent, WindowEvent},
     event_loop::{ActiveEventLoop, ControlFlow, EventLoop},
     window::{Window, WindowId},
 };
@@ -83,7 +83,7 @@ impl ApplicationHandler for RenoiredApp {
         match event {
             DeviceEvent::MouseMotion { delta } => self.state.input.set_cursor_delta(delta),
             DeviceEvent::MouseWheel { delta } => self.state.input.set_scroll_delta(delta),
-            _ => {},
+            _ => {}
         }
     }
 
@@ -139,7 +139,7 @@ impl ApplicationHandler for RenoiredApp {
                 }
                 self.state.window.as_ref().unwrap().request_redraw();
             }
-            _ => {},
+            _ => {}
         }
     }
 }

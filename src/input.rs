@@ -7,7 +7,10 @@
 // #[allow(unused_imports)]
 // use renoir_proc_macros::VariantVector;
 
-use winit::{event::{ElementState, MouseButton, MouseScrollDelta}, keyboard::PhysicalKey};
+use winit::{
+    event::{ElementState, MouseButton, MouseScrollDelta},
+    keyboard::PhysicalKey,
+};
 
 // Because I want to use VirtualKeycode as an index into a list of keys, we get the number of
 // possible VirtualKeycodes and then subtract one as arrays are zero-indexed.
@@ -98,9 +101,8 @@ impl RenoiredInput {
 
     pub(crate) fn set_key(&mut self, input: winit::event::KeyEvent) {
         match input.physical_key {
-                PhysicalKey::Code(keycode) => self.keys[keycode as usize] = input.state.into(),
-                PhysicalKey::Unidentified(_) => { /* TODO: figure out what to do with these */
-            }
+            PhysicalKey::Code(keycode) => self.keys[keycode as usize] = input.state.into(),
+            PhysicalKey::Unidentified(_) => { /* TODO: figure out what to do with these */ }
         }
     }
 
@@ -137,7 +139,7 @@ impl RenoiredInput {
             MouseButton::Left => self.mouse.left_click = state.into(),
             MouseButton::Middle => self.mouse.middle_click = state.into(),
             MouseButton::Right => self.mouse.middle_click = state.into(),
-            _ => {},
+            _ => {}
         }
     }
 
@@ -149,12 +151,12 @@ impl RenoiredInput {
         match delta {
             MouseScrollDelta::LineDelta(x, y) => {
                 self.mouse.scroll_delta = (x.into(), y.into());
-            },
+            }
             MouseScrollDelta::PixelDelta(pos) => {
                 self.mouse.scroll_delta = (pos.x, pos.y);
-            },
+            }
         }
-    } 
+    }
 
     pub fn get_key(&self, key: Key) -> KeyState {
         self.keys[key as usize]
@@ -176,7 +178,7 @@ impl RenoiredInput {
         self.keys[key as usize].just_released()
     }
 
-    // TODO: add functions for getting mouse buttons. im too tired to pick names. 
+    // TODO: add functions for getting mouse buttons. im too tired to pick names.
 
     /* TODO: I dont think this can be implemented without a proc macro to get a Vec of keys, that we can use 'index' as an index into to
              get a list of pressed keys w/ associated renoir Key names
