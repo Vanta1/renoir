@@ -8,6 +8,7 @@ pub struct Flow {
     should_close: bool,
 }
 
+/// Similar to winit's 'ControlFlow', this tells the RenoiredApp when it should close.
 impl Flow {
     pub fn new() -> Self {
         Flow {
@@ -25,7 +26,7 @@ impl Flow {
 }
 
 pub struct RenoiredAppState {
-    pub window: Option<Arc<Window>>,
+    pub window: Option<Arc<Window>>, // window needs to be an option as one can only be created with an ActiveEventLoop
     pub input: RenoiredInput,
     pub time: DeltaTime,
     pub flow: Flow,

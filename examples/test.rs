@@ -30,6 +30,6 @@ fn main() {
             player.0 += speed * time.delta_time()
         }
 
-        println!("X: {}, Y: {}", player.0, player.1);
+        //println!("X: {}, Y: {}", player.0, player.1);
     })
 }

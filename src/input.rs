@@ -7,16 +7,19 @@
 // #[allow(unused_imports)]
 // use renoir_proc_macros::VariantVector;
 
+use winit::{event::{ElementState, MouseButton, MouseScrollDelta}, keyboard::PhysicalKey};
+
 // Because I want to use VirtualKeycode as an index into a list of keys, we get the number of
 // possible VirtualKeycodes and then subtract one as arrays are zero-indexed.
 // const NUM_KEYCODES: usize = std::mem::variant_count::<winit::keyboard::KeyCode>();
 const NUM_KEYCODES: usize = 194 + 4; // 194 winit, 4 provided by renoired
 
-#[derive(Clone, Copy, PartialEq, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug, Default)]
 pub enum KeyState {
     JustPressed,
     Pressed,
     JustReleased,
+    #[default]
     Released,
 }
 
@@ -36,11 +39,40 @@ impl KeyState {
     pub fn just_released(&self) -> bool {
         *self == Self::JustReleased
     }
+
+    pub(crate) fn update(&self) -> Self {
+        match self {
+            KeyState::JustPressed => KeyState::Pressed,
+            KeyState::Pressed => KeyState::Pressed,
+            KeyState::JustReleased => KeyState::Released,
+            KeyState::Released => KeyState::Released,
+        }
+    }
+}
+
+impl From<ElementState> for KeyState {
+    fn from(value: ElementState) -> Self {
+        match value {
+            ElementState::Pressed => KeyState::JustPressed,
+            ElementState::Released => KeyState::JustReleased,
+        }
+    }
+}
+
+#[derive(Default)]
+pub struct MouseState {
+    // winit supports more mouse buttons than this but.... who cares about those buttons
+    left_click: KeyState,
+    middle_click: KeyState,
+    right_click: KeyState,
+    cursor_delta: (f64, f64),
+    scroll_delta: (f64, f64),
 }
 
 pub struct RenoiredInput {
     keys: [KeyState; NUM_KEYCODES],
     prev_modifiers_state: winit::keyboard::ModifiersState,
+    pub(crate) mouse: MouseState,
 }
 
 impl RenoiredInput {
@@ -48,29 +80,26 @@ impl RenoiredInput {
         RenoiredInput {
             keys: [KeyState::Released; NUM_KEYCODES],
             prev_modifiers_state: winit::keyboard::ModifiersState::empty(),
+            mouse: MouseState::default(),
         }
     }
 
-    pub fn update(&mut self) {
+    pub(crate) fn update(&mut self) {
+        self.mouse.left_click.update();
+        self.mouse.middle_click.update();
+        self.mouse.right_click.update();
+        self.mouse.cursor_delta = (0.0, 0.0);
+        self.mouse.scroll_delta = (0.0, 0.0);
+
         for key in 0..self.keys.len() {
-            self.keys[key] = match self.keys[key] {
-                KeyState::JustPressed => KeyState::Pressed,
-                KeyState::Pressed => KeyState::Pressed,
-                KeyState::JustReleased => KeyState::Released,
-                KeyState::Released => KeyState::Released,
-            }
+            self.keys[key].update();
         }
     }
 
     pub(crate) fn set_key(&mut self, input: winit::event::KeyEvent) {
         match input.physical_key {
-            winit::keyboard::PhysicalKey::Code(keycode) => {
-                self.keys[keycode as usize] = match input.state {
-                    winit::event::ElementState::Pressed => KeyState::JustPressed,
-                    winit::event::ElementState::Released => KeyState::JustReleased,
-                }
-            }
-            winit::keyboard::PhysicalKey::Unidentified(_) => { /* TODO: figure out what to do with these */
+                PhysicalKey::Code(keycode) => self.keys[keycode as usize] = input.state.into(),
+                PhysicalKey::Unidentified(_) => { /* TODO: figure out what to do with these */
             }
         }
     }
@@ -103,6 +132,30 @@ impl RenoiredInput {
         self.prev_modifiers_state = mods;
     }
 
+    pub(crate) fn set_mouse_button(&mut self, state: ElementState, button: MouseButton) {
+        match button {
+            MouseButton::Left => self.mouse.left_click = state.into(),
+            MouseButton::Middle => self.mouse.middle_click = state.into(),
+            MouseButton::Right => self.mouse.middle_click = state.into(),
+            _ => {},
+        }
+    }
+
+    pub(crate) fn set_cursor_delta(&mut self, delta: (f64, f64)) {
+        self.mouse.cursor_delta = delta;
+    }
+
+    pub(crate) fn set_scroll_delta(&mut self, delta: MouseScrollDelta) {
+        match delta {
+            MouseScrollDelta::LineDelta(x, y) => {
+                self.mouse.scroll_delta = (x.into(), y.into());
+            },
+            MouseScrollDelta::PixelDelta(pos) => {
+                self.mouse.scroll_delta = (pos.x, pos.y);
+            },
+        }
+    } 
+
     pub fn get_key(&self, key: Key) -> KeyState {
         self.keys[key as usize]
     }
@@ -122,6 +175,8 @@ impl RenoiredInput {
     pub fn just_released(&self, key: Key) -> bool {
         self.keys[key as usize].just_released()
     }
+
+    // TODO: add functions for getting mouse buttons. im too tired to pick names. 
 
     /* TODO: I dont think this can be implemented without a proc macro to get a Vec of keys, that we can use 'index' as an index into to
              get a list of pressed keys w/ associated renoir Key names

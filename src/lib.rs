@@ -2,7 +2,7 @@ use std::sync::Arc;
 use time::DeltaTime;
 use winit::{
     application::ApplicationHandler,
-    event::WindowEvent,
+    event::{DeviceEvent, MouseScrollDelta, WindowEvent},
     event_loop::{ActiveEventLoop, ControlFlow, EventLoop},
     window::{Window, WindowId},
 };
@@ -52,7 +52,7 @@ impl RenoiredApp {
         env_logger::init();
         match event_loop.run_app(self) {
             Ok(_) => {
-                println!("See you next time...")
+                println!("See you next time...") // i miss osu
             }
             Err(e) => println!("{e}"),
         }
@@ -74,6 +74,19 @@ impl ApplicationHandler for RenoiredApp {
         self.renderer = Some(renderer);
     }
 
+    fn device_event(
+        &mut self,
+        _event_loop: &ActiveEventLoop,
+        _device_id: winit::event::DeviceId,
+        event: winit::event::DeviceEvent,
+    ) {
+        match event {
+            DeviceEvent::MouseMotion { delta } => self.state.input.set_cursor_delta(delta),
+            DeviceEvent::MouseWheel { delta } => self.state.input.set_scroll_delta(delta),
+            _ => {},
+        }
+    }
+
     fn window_event(
         &mut self,
         event_loop: &ActiveEventLoop,
@@ -81,6 +94,10 @@ impl ApplicationHandler for RenoiredApp {
         event: WindowEvent,
     ) {
         match event {
+            WindowEvent::CloseRequested => {
+                event_loop.exit();
+            }
+
             // Renoired uses a custom input system so that users don't have to deal with handling WindowEvents, it reads all inputs before running the main game loop and processes them with the RenoirInput structure
             WindowEvent::ModifiersChanged(modifiers) => {
                 self.state.input.set_mods(modifiers.state());
@@ -88,9 +105,10 @@ impl ApplicationHandler for RenoiredApp {
             WindowEvent::KeyboardInput { event, .. } => {
                 self.state.input.set_key(event);
             }
-            WindowEvent::CloseRequested => {
-                event_loop.exit();
+            WindowEvent::MouseInput { state, button, .. } => {
+                self.state.input.set_mouse_button(state, button);
             }
+
             WindowEvent::RedrawRequested => {
                 // update delta time
                 self.state.time.update();
@@ -121,7 +139,7 @@ impl ApplicationHandler for RenoiredApp {
                 }
                 self.state.window.as_ref().unwrap().request_redraw();
             }
-            _ => (),
+            _ => {},
         }
     }
 }
