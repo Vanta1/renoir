@@ -1,5 +1,5 @@
 use std::sync::Arc;
-use winit::window::Window;
+use winit::window::{CursorGrabMode, Window};
 
 use crate::input::RenoiredInput;
 use crate::time::DeltaTime;
@@ -33,7 +33,27 @@ pub struct RenoiredAppState {
 }
 
 impl RenoiredAppState {
+    pub fn new() -> Self {
+        Self {
+            window: None,
+            input: RenoiredInput::new(),
+            time: DeltaTime::new(),
+            flow: Flow::new(),
+        }
+    }
+
     pub fn close(&mut self) {
         self.flow.should_close = true;
+    }
+
+    pub fn grab_cursor(&self, grab: bool) {
+        // the result of set_cursor_grab is ignored as it's only necessary for Wayland, and so it doesn't matter on other platforms
+        if grab {
+            self.window.as_ref().unwrap().set_cursor_visible(false);
+            let _ = self.window.as_ref().unwrap().set_cursor_grab(CursorGrabMode::Locked);
+        } else {
+            self.window.as_ref().unwrap().set_cursor_visible(true);
+            let _ = self.window.as_ref().unwrap().set_cursor_grab(CursorGrabMode::None);
+        }
     }
 }

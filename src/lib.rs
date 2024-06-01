@@ -1,5 +1,4 @@
 use std::sync::Arc;
-use time::DeltaTime;
 use winit::{
     application::ApplicationHandler,
     event::{DeviceEvent, WindowEvent},
@@ -13,9 +12,8 @@ mod render;
 mod state;
 mod time;
 
-use input::RenoiredInput;
 use render::renderer::Renderer;
-use state::{Flow, RenoiredAppState};
+use state::RenoiredAppState;
 
 pub mod prelude {
     pub use crate::alias;
@@ -36,12 +34,7 @@ impl RenoiredApp {
         RenoiredApp {
             renderer: None,
             run_fn: None,
-            state: RenoiredAppState {
-                window: None,
-                input: RenoiredInput::new(),
-                time: DeltaTime::new(),
-                flow: Flow::new(),
-            },
+            state: RenoiredAppState::new()
         }
     }
 
@@ -137,6 +130,7 @@ impl ApplicationHandler for RenoiredApp {
                 } else {
                     println!("Renderer wasn't initialized prior to trying to render.. ??");
                 }
+                
                 self.state.window.as_ref().unwrap().request_redraw();
             }
             _ => {}
