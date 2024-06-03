@@ -34,7 +34,7 @@ impl RenoiredApp {
         RenoiredApp {
             renderer: None,
             run_fn: None,
-            state: RenoiredAppState::new()
+            state: RenoiredAppState::new(),
         }
     }
 
@@ -130,7 +130,7 @@ impl ApplicationHandler for RenoiredApp {
                 } else {
                     println!("Renderer wasn't initialized prior to trying to render.. ??");
                 }
-                
+
                 self.state.window.as_ref().unwrap().request_redraw();
             }
             _ => {}

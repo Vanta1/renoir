@@ -94,7 +94,9 @@ impl RenoiredInput {
         self.mouse.cursor_delta = (0.0, 0.0);
         self.mouse.scroll_delta = (0.0, 0.0);
 
-        self.keys.iter_mut().for_each(|key| { key.update(); });
+        self.keys.iter_mut().for_each(|key| {
+            key.update();
+        });
     }
 
     pub(crate) fn set_key(&mut self, input: winit::event::KeyEvent) {
@@ -174,6 +176,10 @@ impl RenoiredInput {
 
     pub fn just_released(&self, key: Key) -> bool {
         self.keys[key as usize].just_released()
+    }
+
+    pub fn get_mouse_delta(&self) -> (f64, f64) {
+        self.mouse.cursor_delta
     }
 
     // TODO: add functions for getting mouse buttons. im too tired to pick names.

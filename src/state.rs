@@ -48,12 +48,17 @@ impl RenoiredAppState {
 
     pub fn grab_cursor(&self, grab: bool) {
         // the result of set_cursor_grab is ignored as it's only necessary for Wayland, and so it doesn't matter on other platforms
-        if grab {
-            self.window.as_ref().unwrap().set_cursor_visible(false);
-            let _ = self.window.as_ref().unwrap().set_cursor_grab(CursorGrabMode::Locked);
+
+        if let Some(window) = self.window.as_ref() {
+            if grab {
+                window.set_cursor_visible(false);
+                let _ = window.set_cursor_grab(CursorGrabMode::Locked);
+            } else {
+                self.window.as_ref().unwrap().set_cursor_visible(true);
+                let _ = window.set_cursor_grab(CursorGrabMode::None);
+            }
         } else {
-            self.window.as_ref().unwrap().set_cursor_visible(true);
-            let _ = self.window.as_ref().unwrap().set_cursor_grab(CursorGrabMode::None);
+            // TODO: implement a window configuration that can be initialized and edited prior to window creation, and then applied after
         }
     }
 }
