@@ -7,7 +7,6 @@ use winit::{
 };
 
 mod input;
-mod macros;
 mod render;
 mod state;
 mod time;
@@ -16,7 +15,6 @@ use render::renderer::Renderer;
 use state::RenoiredAppState;
 
 pub mod prelude {
-    pub use crate::alias;
     pub use crate::input::Key;
     pub use crate::RenoiredApp;
 }

@@ -12,6 +12,7 @@ fn main() {
 
     game.run(move |rn| {
         // 'rn' is an abbreviation of Renoired here.
+        
         rn.grab_cursor(true);
 
         if (rn.input.pressed(Key::C) && rn.input.pressed(Key::Ctrl)) || rn.input.pressed(Key::Q) {
