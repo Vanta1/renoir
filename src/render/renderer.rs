@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ultraviolet::{Bivec3, Mat3, Mat4, Rotor3, Vec3, Vec4};
+use ultraviolet::{Bivec3, Mat4, Rotor3, Vec3};
 use wgpu::util::DeviceExt;
 use wgpu::{
     Backends, BindGroup, Buffer, Device, DeviceDescriptor, Features, InstanceDescriptor, Limits,
@@ -25,7 +25,11 @@ const VERTICES: &[Vertex] = &[
 const INDICES: &[u16] = &[0, 1, 4, 1, 2, 4, 2, 3, 4];
 
 const NUM_INSTANCES_PER_ROW: u32 = 10;
-const INSTANCE_DISPLACEMENT: Vec3 = Vec3::new(NUM_INSTANCES_PER_ROW as f32 * 0.5, 0.0, NUM_INSTANCES_PER_ROW as f32 * 0.5);
+const INSTANCE_DISPLACEMENT: Vec3 = Vec3::new(
+    NUM_INSTANCES_PER_ROW as f32 * 0.5,
+    0.0,
+    NUM_INSTANCES_PER_ROW as f32 * 0.5,
+);
 
 pub struct Renderer<'a> {
     surface: Surface<'a>,
@@ -141,7 +145,8 @@ impl<'a> Renderer<'a> {
             label: Some("diffuse_bind_group"),
         });
 
-        let depth_texture = texture::Texture::create_depth_texture(&device, &config, "depth_texture");
+        let depth_texture =
+            texture::Texture::create_depth_texture(&device, &config, "depth_texture");
 
         let camera = camera::Camera::new(&config);
 
@@ -222,7 +227,7 @@ impl<'a> Renderer<'a> {
                 format: texture::Texture::DEPTH_FORMAT,
                 depth_write_enabled: true,
                 depth_compare: wgpu::CompareFunction::Less, // 1.
-                stencil: wgpu::StencilState::default(), // 2.
+                stencil: wgpu::StencilState::default(),     // 2.
                 bias: wgpu::DepthBiasState::default(),
             }),
             multisample: wgpu::MultisampleState {
@@ -250,9 +255,16 @@ impl<'a> Renderer<'a> {
         let instances = (0..NUM_INSTANCES_PER_ROW)
             .flat_map(|z| {
                 (0..NUM_INSTANCES_PER_ROW).map(move |x| {
-                    let position = Mat4::from_translation(Vec3::new(x as f32, 0.0, z as f32) - INSTANCE_DISPLACEMENT);
+                    let position = Mat4::from_translation(
+                        Vec3::new(x as f32, 0.0, z as f32) - INSTANCE_DISPLACEMENT,
+                    );
 
-                    let rotation = Rotor3::from_angle_plane(45.0, Bivec3::from_normalized_axis(position.extract_translation())).into_matrix().into_homogeneous();
+                    let rotation = Rotor3::from_angle_plane(
+                        45.0,
+                        Bivec3::from_normalized_axis(position.extract_translation()),
+                    )
+                    .into_matrix()
+                    .into_homogeneous();
 
                     Instance { position, rotation }
                 })
@@ -294,7 +306,8 @@ impl<'a> Renderer<'a> {
             self.config.width = new_size.width;
             self.config.height = new_size.height;
             self.surface.configure(&self.device, &self.config);
-            self.depth_texture = texture::Texture::create_depth_texture(&self.device, &self.config, "depth_texture");
+            self.depth_texture =
+                texture::Texture::create_depth_texture(&self.device, &self.config, "depth_texture");
         }
     }
 
@@ -303,7 +316,11 @@ impl<'a> Renderer<'a> {
         self.camera.eye = camera.eye;
         self.camera.target = camera.target;
         self.camera_uniform.update_view_proj(&self.camera);
-        self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
+        self.queue.write_buffer(
+            &self.camera_buffer,
+            0,
+            bytemuck::cast_slice(&[self.camera_uniform]),
+        );
 
         let output = self.surface.get_current_texture()?;
         let view = output

@@ -13,7 +13,7 @@ fn main() {
 
     game.run(move |rn| {
         // 'rn' is an abbreviation of Renoired here.
-        
+
         rn.grab_cursor(true);
 
         if (rn.input.pressed(Key::C) && rn.input.pressed(Key::Ctrl)) || rn.input.pressed(Key::Q) {
@@ -23,16 +23,18 @@ fn main() {
         player.0 += ((rn.input.pressed(Key::D) as i32 - rn.input.pressed(Key::A) as i32) as f32)
             * speed
             * rn.time.delta_time();
-        player.1 += ((rn.input.pressed(Key::Space) as i32 - rn.input.pressed(Key::Shift) as i32) as f32)
+        player.1 += ((rn.input.pressed(Key::Space) as i32 - rn.input.pressed(Key::Shift) as i32)
+            as f32)
             * speed
             * rn.time.delta_time();
         player.2 -= ((rn.input.pressed(Key::W) as i32 - rn.input.pressed(Key::S) as i32) as f32)
             * speed
             * rn.time.delta_time();
-            
+
         let mouse_move = rn.input.get_mouse_delta();
 
-        rn.camera.rotate(mouse_move.0 / 10.0, mouse_move.1 / 10.0, 0.0);
+        rn.camera
+            .rotate(mouse_move.0 / 10.0, mouse_move.1 / 10.0, 0.0);
         rn.camera.set_translate(player.0, player.1, player.2)
     })
 }

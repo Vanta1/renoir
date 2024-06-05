@@ -73,7 +73,10 @@ impl ApplicationHandler for RenoiredApp {
         event: winit::event::DeviceEvent,
     ) {
         match event {
-            DeviceEvent::MouseMotion { delta } => self.state.input.set_cursor_delta((delta.0 as f32, delta.1 as f32)),
+            DeviceEvent::MouseMotion { delta } => self
+                .state
+                .input
+                .set_cursor_delta((delta.0 as f32, delta.1 as f32)),
             DeviceEvent::MouseWheel { delta } => self.state.input.set_scroll_delta(delta),
             _ => {}
         }
