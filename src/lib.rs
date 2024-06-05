@@ -6,6 +6,7 @@ use winit::{
     window::{Window, WindowId},
 };
 
+mod camera;
 mod input;
 mod render;
 mod state;
@@ -116,7 +117,7 @@ impl ApplicationHandler for RenoiredApp {
                 self.state.input.update();
 
                 if let Some(renderer) = self.renderer.as_mut() {
-                    match renderer.render() {
+                    match renderer.render(&mut self.state.camera) {
                         Ok(_) => {}
                         // Reconfigure the surface if lost
                         Err(wgpu::SurfaceError::Lost) => renderer.resize(renderer.size),

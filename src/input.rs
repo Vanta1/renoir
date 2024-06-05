@@ -64,12 +64,22 @@ impl From<ElementState> for KeyState {
 
 #[derive(Default)]
 pub struct MouseState {
-    // winit supports more mouse buttons than this but.... who cares about those buttons
+    // winit supports more mouse buttons than this but.... who cares about those buttons (for now (i should find a better way to represent this))
     left_click: KeyState,
     middle_click: KeyState,
     right_click: KeyState,
     cursor_delta: (f64, f64),
     scroll_delta: (f64, f64),
+}
+
+impl MouseState {
+    fn update(&mut self) {
+        self.left_click.update();
+        self.middle_click.update();
+        self.right_click.update();
+        self.cursor_delta = (0.0, 0.0);
+        self.scroll_delta = (0.0, 0.0);
+    }
 }
 
 pub struct RenoiredInput {
@@ -88,11 +98,7 @@ impl RenoiredInput {
     }
 
     pub(crate) fn update(&mut self) {
-        self.mouse.left_click.update();
-        self.mouse.middle_click.update();
-        self.mouse.right_click.update();
-        self.mouse.cursor_delta = (0.0, 0.0);
-        self.mouse.scroll_delta = (0.0, 0.0);
+        self.mouse.update();
 
         self.keys.iter_mut().for_each(|key| {
             key.update();

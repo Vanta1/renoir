@@ -11,7 +11,7 @@ use winit::{dpi::PhysicalSize, window::Window};
 
 use cgmath::prelude::*;
 
-use crate::render::camera;
+use crate::camera::{self, CameraController};
 use crate::render::texture;
 
 #[rustfmt::skip]
@@ -43,6 +43,7 @@ pub struct Renderer<'a> {
     index_buffer: Buffer,
     num_indices: u32,
     diffuse_bind_group: BindGroup,
+    #[allow(dead_code)]
     diffuse_texture: texture::Texture,
     depth_texture: texture::Texture,
     camera: camera::Camera,
@@ -315,7 +316,13 @@ impl<'a> Renderer<'a> {
         }
     }
 
-    pub fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
+    pub fn render(&mut self, camera: &mut CameraController) -> Result<(), wgpu::SurfaceError> {
+        camera.update();
+        self.camera.eye = camera.eye;
+        self.camera.target = camera.target;
+        self.camera_uniform.update_view_proj(&self.camera);
+        self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[self.camera_uniform]));
+
         let output = self.surface.get_current_texture()?;
         let view = output
             .texture

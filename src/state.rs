@@ -1,6 +1,7 @@
 use std::sync::Arc;
 use winit::window::{CursorGrabMode, Window};
 
+use crate::camera::CameraController;
 use crate::input::RenoiredInput;
 use crate::time::DeltaTime;
 
@@ -30,6 +31,7 @@ pub struct RenoiredAppState {
     pub input: RenoiredInput,
     pub time: DeltaTime,
     pub flow: Flow,
+    pub camera: CameraController,
 }
 
 impl RenoiredAppState {
@@ -39,6 +41,7 @@ impl RenoiredAppState {
             input: RenoiredInput::new(),
             time: DeltaTime::new(),
             flow: Flow::new(),
+            camera: CameraController::new(),
         }
     }
 
