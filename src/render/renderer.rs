@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use ultraviolet::{Bivec3, Mat3, Mat4, Rotor3, Vec3, Vec4};
 use wgpu::util::DeviceExt;
 use wgpu::{
     Backends, BindGroup, Buffer, Device, DeviceDescriptor, Features, InstanceDescriptor, Limits,
@@ -8,8 +9,6 @@ use wgpu::{
 };
 
 use winit::{dpi::PhysicalSize, window::Window};
-
-use cgmath::prelude::*;
 
 use crate::camera::{self, CameraController};
 use crate::render::texture;
@@ -26,11 +25,7 @@ const VERTICES: &[Vertex] = &[
 const INDICES: &[u16] = &[0, 1, 4, 1, 2, 4, 2, 3, 4];
 
 const NUM_INSTANCES_PER_ROW: u32 = 10;
-const INSTANCE_DISPLACEMENT: cgmath::Vector3<f32> = cgmath::Vector3::new(
-    NUM_INSTANCES_PER_ROW as f32 * 0.5,
-    0.0,
-    NUM_INSTANCES_PER_ROW as f32 * 0.5,
-);
+const INSTANCE_DISPLACEMENT: Vec3 = Vec3::new(NUM_INSTANCES_PER_ROW as f32 * 0.5, 0.0, NUM_INSTANCES_PER_ROW as f32 * 0.5);
 
 pub struct Renderer<'a> {
     surface: Surface<'a>,
@@ -255,22 +250,9 @@ impl<'a> Renderer<'a> {
         let instances = (0..NUM_INSTANCES_PER_ROW)
             .flat_map(|z| {
                 (0..NUM_INSTANCES_PER_ROW).map(move |x| {
-                    let position = cgmath::Vector3 {
-                        x: x as f32,
-                        y: 0.0,
-                        z: z as f32,
-                    } - INSTANCE_DISPLACEMENT;
+                    let position = Mat4::from_translation(Vec3::new(x as f32, 0.0, z as f32) - INSTANCE_DISPLACEMENT);
 
-                    let rotation = if position.is_zero() {
-                        // this is needed so an object at (0, 0, 0) won't get scaled to zero
-                        // as Quaternions can affect scale if they're not created correctly
-                        cgmath::Quaternion::from_axis_angle(
-                            cgmath::Vector3::unit_z(),
-                            cgmath::Deg(0.0),
-                        )
-                    } else {
-                        cgmath::Quaternion::from_axis_angle(position.normalize(), cgmath::Deg(45.0))
-                    };
+                    let rotation = Rotor3::from_angle_plane(45.0, Bivec3::from_normalized_axis(position.extract_translation())).into_matrix().into_homogeneous();
 
                     Instance { position, rotation }
                 })
@@ -408,8 +390,8 @@ impl Vertex {
 }
 
 struct Instance {
-    position: cgmath::Vector3<f32>,
-    rotation: cgmath::Quaternion<f32>,
+    position: Mat4,
+    rotation: Mat4,
 }
 
 #[repr(C)]
@@ -421,9 +403,7 @@ struct InstanceRaw {
 impl Instance {
     fn to_raw(&self) -> InstanceRaw {
         InstanceRaw {
-            model: (cgmath::Matrix4::from_translation(self.position)
-                * cgmath::Matrix4::from(self.rotation))
-            .into(),
+            model: (self.position * self.rotation).into(),
         }
     }
 }

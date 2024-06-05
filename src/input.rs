@@ -68,8 +68,8 @@ pub struct MouseState {
     left_click: KeyState,
     middle_click: KeyState,
     right_click: KeyState,
-    cursor_delta: (f64, f64),
-    scroll_delta: (f64, f64),
+    cursor_delta: (f32, f32),
+    scroll_delta: (f32, f32),
 }
 
 impl MouseState {
@@ -149,17 +149,17 @@ impl RenoiredInput {
         }
     }
 
-    pub(crate) fn set_cursor_delta(&mut self, delta: (f64, f64)) {
+    pub(crate) fn set_cursor_delta(&mut self, delta: (f32, f32)) {
         self.mouse.cursor_delta = delta;
     }
 
     pub(crate) fn set_scroll_delta(&mut self, delta: MouseScrollDelta) {
         match delta {
             MouseScrollDelta::LineDelta(x, y) => {
-                self.mouse.scroll_delta = (x.into(), y.into());
+                self.mouse.scroll_delta = (x, y);
             }
             MouseScrollDelta::PixelDelta(pos) => {
-                self.mouse.scroll_delta = (pos.x, pos.y);
+                self.mouse.scroll_delta = (pos.x as f32, pos.y as f32);
             }
         }
     }
@@ -184,7 +184,7 @@ impl RenoiredInput {
         self.keys[key as usize].just_released()
     }
 
-    pub fn get_mouse_delta(&self) -> (f64, f64) {
+    pub fn get_mouse_delta(&self) -> (f32, f32) {
         self.mouse.cursor_delta
     }
 
