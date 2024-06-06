@@ -5,7 +5,7 @@ use renoired::prelude::*;
 fn main() {
     println!("WASD or the mouse to move, Press Ctrl+C or Q to close this game!");
 
-    let mut player: (f32, f32, f32) = (-10., -10., 10.);
+    let mut player: (f32, f32, f32) = (0., 0., -10.);
     // TODO: add way to set up camera before running the game
     let speed: f32 = 3.;
 
@@ -33,8 +33,7 @@ fn main() {
 
         let mouse_move = rn.input.get_mouse_delta();
 
-        rn.camera
-            .rotate(mouse_move.0 / 10.0, mouse_move.1 / 10.0, 0.0);
+        rn.camera.rotate(mouse_move.0 / 10.0, mouse_move.1 / 10.0, 0.0);
         rn.camera.set_translate(player.0, player.1, player.2)
     })
 }

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ultraviolet::{Bivec3, Mat4, Rotor3, Vec3};
+use ultraviolet::{Mat4, Vec3};
 use wgpu::util::DeviceExt;
 use wgpu::{
     Backends, BindGroup, Buffer, Device, DeviceDescriptor, Features, InstanceDescriptor, Limits,
@@ -23,13 +23,6 @@ const VERTICES: &[Vertex] = &[
 ];
 
 const INDICES: &[u16] = &[0, 1, 4, 1, 2, 4, 2, 3, 4];
-
-const NUM_INSTANCES_PER_ROW: u32 = 10;
-const INSTANCE_DISPLACEMENT: Vec3 = Vec3::new(
-    NUM_INSTANCES_PER_ROW as f32 * 0.5,
-    0.0,
-    NUM_INSTANCES_PER_ROW as f32 * 0.5,
-);
 
 pub struct Renderer<'a> {
     surface: Surface<'a>,
@@ -252,24 +245,11 @@ impl<'a> Renderer<'a> {
 
         let num_indices = INDICES.len() as u32;
 
-        let instances = (0..NUM_INSTANCES_PER_ROW)
-            .flat_map(|z| {
-                (0..NUM_INSTANCES_PER_ROW).map(move |x| {
-                    let position = Mat4::from_translation(
-                        Vec3::new(x as f32, 0.0, z as f32) - INSTANCE_DISPLACEMENT,
-                    );
-
-                    let rotation = Rotor3::from_angle_plane(
-                        45.0,
-                        Bivec3::from_normalized_axis(position.extract_translation()),
-                    )
-                    .into_matrix()
-                    .into_homogeneous();
-
-                    Instance { position, rotation }
-                })
-            })
-            .collect::<Vec<_>>();
+        let mut instances: Vec<Instance> = Vec::new();
+        instances.push(Instance {
+            position: Mat4::from_translation(Vec3::unit_z()),
+            rotation: Mat4::identity(),
+        });
 
         let instance_data = instances.iter().map(Instance::to_raw).collect::<Vec<_>>();
         let instance_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {

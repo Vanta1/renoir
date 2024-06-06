@@ -32,11 +32,11 @@ pub struct Camera {
 impl Camera {
     pub fn new(config: &SurfaceConfiguration) -> Self {
         Self {
-            eye: (0.0, 1.0, 2.0).into(),
+            eye: (0.0, 0.0, 2.0).into(),
             target: (0.0, 0.0, 0.0).into(),
             up: Vec3::unit_y(),
             aspect: config.width as f32 / config.height as f32,
-            fovy: 45.0,
+            fovy: 90.0,
             znear: 0.1,
             zfar: 100.0,
         }
@@ -80,7 +80,7 @@ impl CameraController {
         self.roll += deg_z;
     }
 
-    pub fn set_translate(&mut self, mag_x: f32, mag_y: f32, mag_z: f32) {
-        self.eye = (mag_x, mag_y, mag_z).into();
+    pub fn set_translate(&mut self, x: f32, y: f32, z: f32) {
+        self.eye = (x, y, z).into();
     }
 }
