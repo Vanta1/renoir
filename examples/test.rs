@@ -33,7 +33,7 @@ fn main() {
 
         let mouse_move = rn.input.get_mouse_delta();
 
-        rn.camera.rotate(mouse_move.0 / 10.0, mouse_move.1 / 10.0, 0.0);
+        rn.camera.rotate(mouse_move.0 / 100.0, mouse_move.1 / 100.0, 0.0);
         rn.camera.set_translate(player.0, player.1, player.2)
     })
 }

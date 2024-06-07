@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use ultraviolet::{Mat4, Vec3};
+use nalgebra::{Isometry3, Matrix4, Rotation3, Translation, Vector3};
 use wgpu::util::DeviceExt;
 use wgpu::{
     Backends, BindGroup, Buffer, Device, DeviceDescriptor, Features, InstanceDescriptor, Limits,
@@ -194,7 +194,7 @@ impl<'a> Renderer<'a> {
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: "vs_main",
-                buffers: &[Vertex::desc(), InstanceRaw::desc()],
+                buffers: &[Vertex::desc(), Instance::desc()],
                 compilation_options: PipelineCompilationOptions::default(),
             },
             fragment: Some(wgpu::FragmentState {
@@ -247,14 +247,12 @@ impl<'a> Renderer<'a> {
 
         let mut instances: Vec<Instance> = Vec::new();
         instances.push(Instance {
-            position: Mat4::from_translation(Vec3::unit_z()),
-            rotation: Mat4::identity(),
+            isometry: Matrix4::from_euler_angles(0.0, 0.0, 0.0).append_translation(&Vector3::new(0.0, 0.0, -20.))
         });
 
-        let instance_data = instances.iter().map(Instance::to_raw).collect::<Vec<_>>();
         let instance_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Instance Buffer"),
-            contents: bytemuck::cast_slice(&instance_data),
+            contents: bytemuck::cast_slice(&instances),
             usage: wgpu::BufferUsages::VERTEX,
         });
 
@@ -386,33 +384,18 @@ impl Vertex {
     }
 }
 
-struct Instance {
-    position: Mat4,
-    rotation: Mat4,
-}
 
 #[repr(C)]
 #[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
-struct InstanceRaw {
-    model: [[f32; 4]; 4],
+struct Instance {
+    isometry: Matrix4<f32>
 }
 
 impl Instance {
-    fn to_raw(&self) -> InstanceRaw {
-        InstanceRaw {
-            model: (self.position * self.rotation).into(),
-        }
-    }
-}
-
-impl InstanceRaw {
     fn desc() -> wgpu::VertexBufferLayout<'static> {
         use std::mem;
         wgpu::VertexBufferLayout {
-            array_stride: mem::size_of::<InstanceRaw>() as wgpu::BufferAddress,
-            // We need to switch from using a step mode of Vertex to Instance
-            // This means that our shaders will only change to use the next
-            // instance when the shader starts processing a new instance
+            array_stride: mem::size_of::<Instance>() as wgpu::BufferAddress,
             step_mode: wgpu::VertexStepMode::Instance,
             attributes: &[
                 // A mat4 takes up 4 vertex slots as it is technically 4 vec4s. We need to define a slot
