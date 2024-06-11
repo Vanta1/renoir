@@ -1,3 +1,8 @@
+//! Re-exports of nalgebra types, centralized here so that we don't need to keep specifying f32 as the type parameter for each commonly use
+//! struct. This also helps to maintain consistency across the codebase. 
+//! Another useful feature is that these are also re-exported in the crate prelude, making them accessible to end users, where they will likely
+//! be useful.
+
 pub type Vec3 = nalgebra::Vector3<f32>;
 pub type Point3 = nalgebra::Point3<f32>;
 pub type Mat4 = nalgebra::Matrix4<f32>;

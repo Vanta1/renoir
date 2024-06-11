@@ -23,12 +23,10 @@ pub mod prelude {
     pub use crate::math::prelude::*;
 }
 
-pub type GameLoop = Box<dyn FnMut(&mut RenoiredAppState)>;
-
 pub struct RenoiredApp {
     renderer: Option<Renderer<'static>>,
     pub state: RenoiredAppState,
-    run_fn: Option<GameLoop>,
+    run_fn: Option<Box<dyn FnMut(&mut RenoiredAppState)>>,
 }
 
 impl RenoiredApp {
