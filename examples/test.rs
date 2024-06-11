@@ -1,5 +1,6 @@
 // This file should serve as an example for game devs new to renoired, easy to follow
 
+use nalgebra::Vector3;
 use renoired::prelude::*;
 
 fn main() {
@@ -33,7 +34,10 @@ fn main() {
 
         let mouse_move = rn.input.get_mouse_delta();
 
-        rn.camera.rotate(mouse_move.0 / 100.0, mouse_move.1 / 100.0, 0.0);
-        rn.camera.set_translate(player.0, player.1, player.2)
+        rn.camera.rotate_around_axis(Vector3::y().xyz(), mouse_move.0 / 100.0, TransformSpace::World);
+        rn.camera.rotate_around_axis(Vector3::x().xyz(), -mouse_move.1 / 100.0, TransformSpace::Local);
+        rn.camera.set_translate(player.0, player.1, player.2);
+
+        println!("{}, {}", mouse_move.0, mouse_move.1);
     })
 }

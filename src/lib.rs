@@ -18,6 +18,7 @@ use state::RenoiredAppState;
 pub mod prelude {
     pub use crate::input::Key;
     pub use crate::RenoiredApp;
+    pub use crate::camera::TransformSpace;
 }
 
 pub type GameLoop = Box<dyn FnMut(&mut RenoiredAppState)>;

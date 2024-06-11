@@ -1,5 +1,18 @@
-use nalgebra::{Matrix4, Perspective3, Point3, Rotation3, Vector, Vector3};
+use nalgebra::{Matrix4, Point3, Rotation3, Translation3, UnitQuaternion, Vector3};
 use wgpu::SurfaceConfiguration;
+
+pub enum TransformSpace {
+    Local,
+    World,
+}
+
+#[rustfmt::skip]
+pub const OPENGL_TO_WGPU_MATRIX: Matrix4<f32> = Matrix4::new(
+    1.0, 0.0, 0.0, 0.0,
+    0.0, 1.0, 0.0, 0.0,
+    0.0, 0.0, 0.5, 0.5,
+    0.0, 0.0, 0.0, 1.0,
+);
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
@@ -20,8 +33,8 @@ impl CameraUniform {
 }
 
 pub struct Camera {
-    pub eye: Vector3<f32>,
-    pub target: Vector3<f32>,
+    pub eye: Point3<f32>,
+    pub target: Point3<f32>,
     up: Vector3<f32>,
     aspect: f32,
     fovy: f32,
@@ -32,8 +45,8 @@ pub struct Camera {
 impl Camera {
     pub fn new(config: &SurfaceConfiguration) -> Self {
         Self {
-            eye: Vector3::new(0.0, 0.0, 2.0),
-            target: Vector3::new(0.0, 0.0, 0.0),
+            eye: Point3::new(0.0, 0.0, 10.0),
+            target: Point3::new(0.0, 0.0, 0.0),
             up: Vector3::y(),
             aspect: config.width as f32 / config.height as f32,
             fovy: 90.0,
@@ -43,44 +56,52 @@ impl Camera {
     }
 
     fn build_view_projection_matrix(&self) -> Matrix4<f32> {
-        let view = Matrix4::look_at_rh(&self.eye.into(), &self.target.into(), &self.up);
-        let proj = Matrix4::new_perspective(self.fovy, self.aspect, self.znear, self.zfar);
-        return proj * view;
+        let view = Matrix4::look_at_rh(&self.eye, &self.target, &self.up);
+        let proj = Matrix4::new_perspective(self.aspect, self.fovy, self.znear, self.zfar);
+        return OPENGL_TO_WGPU_MATRIX * proj * view;
     }
 }
 
 pub struct CameraController {
-    pub eye: Vector3<f32>,
-    pub target: Vector3<f32>,
-    pub pitch: f32,
-    pub yaw: f32,
-    pub roll: f32,
+    pub pos: Point3<f32>,
+    pub target: Point3<f32>,
+    iso: Matrix4<f32>,
+    rot: UnitQuaternion<f32>, 
 }
 
 impl CameraController {
     pub fn new() -> Self {
         Self {
-            eye: Vector3::new(0.0, 1.0, 2.0),
-            target: Vector3::new(0.0, 0.0, 0.0),
-            pitch: 0.0,
-            yaw: 0.0,
-            roll: 0.0,
+            pos: Point3::new(0.0, 1.0, -2.0),
+            target: Point3::new(0.0, 0.0, 0.0),
+            iso: Matrix4::identity(),
+            rot: UnitQuaternion::identity(),
         }
     }
 
-    pub fn update(&mut self) {
-        self.target = self.eye + (Rotation3::from_euler_angles(self.yaw, self.pitch, self.roll) * Vector3::z());
+    fn rebuild_iso(&mut self) {
+        self.iso = (Translation3::new(self.pos.x, self.pos.y, self.pos.z) * Rotation3::from(self.rot).transpose()).to_matrix();
     }
 
-    pub fn rotate(&mut self, deg_x: f32, deg_y: f32, deg_z: f32) {
-        self.yaw -= deg_y;
-        self.pitch -= deg_x;
-        self.roll += deg_z;
+    pub fn update(&mut self) {
+        self.target = self.pos + (Rotation3::from(self.rot).transpose() * Vector3::z());
+    }
+
+    pub fn rotate_around_axis(&mut self, axis: Vector3<f32>, angle: f32, space: TransformSpace) {
+        let axis = axis.normalize();
+        let axis = match space {
+            TransformSpace::Local => axis,
+            TransformSpace::World => self.iso.try_inverse().unwrap().transform_vector(&axis),
+        };
+        self.rot = UnitQuaternion::from_scaled_axis(axis * angle) * self.rot;
+        self.rebuild_iso();
+        self.update();
     }
 
     pub fn set_translate(&mut self, x: f32, y: f32, z: f32) {
-        self.eye.x = x;
-        self.eye.y = y;
-        self.eye.z = z;
+        self.pos.x = x;
+        self.pos.y = y;
+        self.pos.z = z;
+        self.rebuild_iso()
     }
 }

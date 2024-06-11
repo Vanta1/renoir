@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use nalgebra::{Isometry3, Matrix4, Rotation3, Translation, Vector3};
+use nalgebra::{point, Matrix4, Rotation3, Translation, Unit, Vector3};
 use wgpu::util::DeviceExt;
 use wgpu::{
     Backends, BindGroup, Buffer, Device, DeviceDescriptor, Features, InstanceDescriptor, Limits,
@@ -23,6 +23,13 @@ const VERTICES: &[Vertex] = &[
 ];
 
 const INDICES: &[u16] = &[0, 1, 4, 1, 2, 4, 2, 3, 4];
+
+const NUM_INSTANCES_PER_ROW: u32 = 10;
+const INSTANCE_DISPLACEMENT: Vector3<f32> = Vector3::new(
+    NUM_INSTANCES_PER_ROW as f32 * 0.5,
+    0.0,
+    NUM_INSTANCES_PER_ROW as f32 * 0.5,
+);
 
 pub struct Renderer<'a> {
     surface: Surface<'a>,
@@ -245,10 +252,25 @@ impl<'a> Renderer<'a> {
 
         let num_indices = INDICES.len() as u32;
 
-        let mut instances: Vec<Instance> = Vec::new();
-        instances.push(Instance {
-            isometry: Matrix4::from_euler_angles(0.0, 0.0, 0.0).append_translation(&Vector3::new(0.0, 0.0, -20.))
-        });
+        let instances = (0..NUM_INSTANCES_PER_ROW)
+            .flat_map(|z| {
+                (0..NUM_INSTANCES_PER_ROW).map(move |x| {
+                    let position = point![x as f32, 0., z as f32] - INSTANCE_DISPLACEMENT;
+
+                    let rotation: Rotation3<f32> = if position.is_empty() {
+                        // this is needed so an object at (0, 0, 0) won'{ x: x as f32, y: 0.0, z: z as f32 } t get scaled to zero
+                        // as Quaternions can affect scale if they're not created correctly
+                        Rotation3::from_axis_angle(&Vector3::z_axis(), 0.0)
+                    } else {
+                        Rotation3::from_axis_angle(&Unit::new_normalize(position.coords), 45.0)
+                    };
+
+                    Instance {
+                        isometry: (Translation::from(position) * rotation).into(),
+                    }
+                })
+            })
+            .collect::<Vec<_>>();
 
         let instance_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Instance Buffer"),
@@ -284,14 +306,13 @@ impl<'a> Renderer<'a> {
             self.config.width = new_size.width;
             self.config.height = new_size.height;
             self.surface.configure(&self.device, &self.config);
-            self.depth_texture =
-                texture::Texture::create_depth_texture(&self.device, &self.config, "depth_texture");
+            self.depth_texture = texture::Texture::create_depth_texture(&self.device, &self.config, "depth_texture");
         }
     }
 
     pub fn render(&mut self, camera: &mut CameraController) -> Result<(), wgpu::SurfaceError> {
         camera.update();
-        self.camera.eye = camera.eye;
+        self.camera.eye = camera.pos;
         self.camera.target = camera.target;
         self.camera_uniform.update_view_proj(&self.camera);
         self.queue.write_buffer(
@@ -311,44 +332,44 @@ impl<'a> Renderer<'a> {
                 label: Some("Render Encoder"),
             });
 
-        let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-            label: Some("Render Pass"),
-            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                view: &view,
-                resolve_target: None,
-                ops: wgpu::Operations {
-                    load: wgpu::LoadOp::Clear(wgpu::Color {
-                        r: 0.1,
-                        g: 0.2,
-                        b: 0.3,
-                        a: 1.0,
+        {
+            let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: Some("Render Pass"),
+                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                    view: &view,
+                    resolve_target: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color {
+                            r: 0.1,
+                            g: 0.2,
+                            b: 0.3,
+                            a: 1.0,
+                        }),
+                        store: wgpu::StoreOp::Store,
+                    },
+                })],
+                depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
+                    view: &self.depth_texture.view,
+                    depth_ops: Some(wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(1.0),
+                        store: wgpu::StoreOp::Store,
                     }),
-                    store: wgpu::StoreOp::Store,
-                },
-            })],
-            depth_stencil_attachment: Some(wgpu::RenderPassDepthStencilAttachment {
-                view: &self.depth_texture.view,
-                depth_ops: Some(wgpu::Operations {
-                    load: wgpu::LoadOp::Clear(1.0),
-                    store: wgpu::StoreOp::Store,
+                    stencil_ops: None,
                 }),
-                stencil_ops: None,
-            }),
-            occlusion_query_set: None,
-            timestamp_writes: None,
-        });
+                occlusion_query_set: None,
+                timestamp_writes: None,
+            });
 
-        render_pass.set_pipeline(&self.render_pipeline);
-        render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
-        render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
-        render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
-        render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
-        render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-        render_pass.draw_indexed(0..self.num_indices, 0, 0..self.instances.len() as _);
+            render_pass.set_pipeline(&self.render_pipeline);
+            render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
+            render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
+            render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
+            render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
+            render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
+            render_pass.draw_indexed(0..self.num_indices, 0, 0..self.instances.len() as _);
+        }
 
-        drop(render_pass);
-
-        self.queue.submit(std::iter::once(encoder.finish()));
+        self.queue.submit([encoder.finish()]);
         output.present();
 
         Ok(())
@@ -384,11 +405,10 @@ impl Vertex {
     }
 }
 
-
 #[repr(C)]
 #[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 struct Instance {
-    isometry: Matrix4<f32>
+    isometry: Matrix4<f32>,
 }
 
 impl Instance {

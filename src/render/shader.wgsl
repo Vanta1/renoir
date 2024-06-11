@@ -1,4 +1,4 @@
-// Vertex shader from https://sotrh.github.io/learn-wgpu/beginner/tutorial3-pipeline/#wgsl
+// Shader from https://sotrh.github.io/learn-wgpu/beginner/tutorial3-pipeline/#wgsl
 
 struct InstanceInput {
     @location(5) model_matrix_0: vec4<f32>,
@@ -11,7 +11,7 @@ struct CameraUniform {
     view_proj: mat4x4<f32>,
 };
 
-@group(1) @binding(0) // 1.
+@group(1) @binding(0)
 var<uniform> camera: CameraUniform;
 
 struct VertexInput {
