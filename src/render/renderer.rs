@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use nalgebra::{point, Matrix4, Rotation3, Translation, Unit, Vector3};
 use wgpu::util::DeviceExt;
 use wgpu::{
     Backends, BindGroup, Buffer, Device, DeviceDescriptor, Features, InstanceDescriptor, Limits,
@@ -12,6 +11,7 @@ use winit::{dpi::PhysicalSize, window::Window};
 
 use crate::camera::{self, CameraController};
 use crate::render::texture;
+use crate::math::prelude::*;
 
 #[rustfmt::skip]
 const VERTICES: &[Vertex] = &[
@@ -25,7 +25,7 @@ const VERTICES: &[Vertex] = &[
 const INDICES: &[u16] = &[0, 1, 4, 1, 2, 4, 2, 3, 4];
 
 const NUM_INSTANCES_PER_ROW: u32 = 10;
-const INSTANCE_DISPLACEMENT: Vector3<f32> = Vector3::new(
+const INSTANCE_DISPLACEMENT: Vec3 = Vec3::new(
     NUM_INSTANCES_PER_ROW as f32 * 0.5,
     0.0,
     NUM_INSTANCES_PER_ROW as f32 * 0.5,
@@ -255,18 +255,18 @@ impl<'a> Renderer<'a> {
         let instances = (0..NUM_INSTANCES_PER_ROW)
             .flat_map(|z| {
                 (0..NUM_INSTANCES_PER_ROW).map(move |x| {
-                    let position = point![x as f32, 0., z as f32] - INSTANCE_DISPLACEMENT;
+                    let position = Point3::new(x as f32, 0., z as f32) - INSTANCE_DISPLACEMENT;
 
-                    let rotation: Rotation3<f32> = if position.is_empty() {
+                    let rotation: Rot3 = if position.is_empty() {
                         // this is needed so an object at (0, 0, 0) won'{ x: x as f32, y: 0.0, z: z as f32 } t get scaled to zero
                         // as Quaternions can affect scale if they're not created correctly
-                        Rotation3::from_axis_angle(&Vector3::z_axis(), 0.0)
+                        Rot3::from_axis_angle(&Vec3::z_axis(), 0.0)
                     } else {
-                        Rotation3::from_axis_angle(&Unit::new_normalize(position.coords), 45.0)
+                        Rot3::from_axis_angle(&nalgebra::Unit::new_normalize(position.coords), 45.0)
                     };
 
                     Instance {
-                        isometry: (Translation::from(position) * rotation).into(),
+                        isometry: (Trans3::from(position) * rotation).into(),
                     }
                 })
             })
@@ -408,7 +408,7 @@ impl Vertex {
 #[repr(C)]
 #[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 struct Instance {
-    isometry: Matrix4<f32>,
+    isometry: Mat4,
 }
 
 impl Instance {

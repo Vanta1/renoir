@@ -11,6 +11,7 @@ mod input;
 mod render;
 mod state;
 mod time;
+mod math;
 
 use render::renderer::Renderer;
 use state::RenoiredAppState;
@@ -19,6 +20,7 @@ pub mod prelude {
     pub use crate::input::Key;
     pub use crate::RenoiredApp;
     pub use crate::camera::TransformSpace;
+    pub use crate::math::prelude::*;
 }
 
 pub type GameLoop = Box<dyn FnMut(&mut RenoiredAppState)>;

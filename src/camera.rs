@@ -1,18 +1,12 @@
-use nalgebra::{Matrix4, Point3, Rotation3, Translation3, UnitQuaternion, Vector3};
 use wgpu::SurfaceConfiguration;
+
+use crate::math::OPENGL_TO_WGPU_MATRIX;
+use crate::math::prelude::*;
 
 pub enum TransformSpace {
     Local,
     World,
 }
-
-#[rustfmt::skip]
-pub const OPENGL_TO_WGPU_MATRIX: Matrix4<f32> = Matrix4::new(
-    1.0, 0.0, 0.0, 0.0,
-    0.0, 1.0, 0.0, 0.0,
-    0.0, 0.0, 0.5, 0.5,
-    0.0, 0.0, 0.0, 1.0,
-);
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
@@ -23,7 +17,7 @@ pub struct CameraUniform {
 impl CameraUniform {
     pub fn new() -> Self {
         Self {
-            view_proj: Matrix4::identity().into(),
+            view_proj: Mat4::identity().into(),
         }
     }
 
@@ -33,9 +27,9 @@ impl CameraUniform {
 }
 
 pub struct Camera {
-    pub eye: Point3<f32>,
-    pub target: Point3<f32>,
-    up: Vector3<f32>,
+    pub eye: Point3,
+    pub target: Point3,
+    up: Vec3,
     aspect: f32,
     fovy: f32,
     znear: f32,
@@ -47,7 +41,7 @@ impl Camera {
         Self {
             eye: Point3::new(0.0, 0.0, 10.0),
             target: Point3::new(0.0, 0.0, 0.0),
-            up: Vector3::y(),
+            up: Vec3::y(),
             aspect: config.width as f32 / config.height as f32,
             fovy: 90.0,
             znear: 0.1,
@@ -55,18 +49,18 @@ impl Camera {
         }
     }
 
-    fn build_view_projection_matrix(&self) -> Matrix4<f32> {
-        let view = Matrix4::look_at_rh(&self.eye, &self.target, &self.up);
-        let proj = Matrix4::new_perspective(self.aspect, self.fovy, self.znear, self.zfar);
+    fn build_view_projection_matrix(&self) -> Mat4 {
+        let view = Mat4::look_at_rh(&self.eye, &self.target, &self.up);
+        let proj = Mat4::new_perspective(self.aspect, self.fovy, self.znear, self.zfar);
         return OPENGL_TO_WGPU_MATRIX * proj * view;
     }
 }
 
 pub struct CameraController {
-    pub pos: Point3<f32>,
-    pub target: Point3<f32>,
-    iso: Matrix4<f32>,
-    rot: UnitQuaternion<f32>, 
+    pub pos: Point3,
+    pub target: Point3,
+    iso: Mat4,
+    rot: UnitQuat, 
 }
 
 impl CameraController {
@@ -74,35 +68,35 @@ impl CameraController {
         Self {
             pos: Point3::new(0.0, 1.0, -2.0),
             target: Point3::new(0.0, 0.0, 0.0),
-            iso: Matrix4::identity(),
-            rot: UnitQuaternion::identity(),
+            iso: Mat4::identity(),
+            rot: UnitQuat::identity(),
         }
     }
 
     // TODO: move this into rotate_around_axis prob, and get rid of the 'iso' field.
     fn rebuild_iso(&mut self) {
-        self.iso = (Translation3::new(self.pos.x, self.pos.y, self.pos.z) * Rotation3::from(self.rot).transpose()).to_matrix();
+        self.iso = (Trans3::new(self.pos.x, self.pos.y, self.pos.z) * Rot3::from(self.rot).transpose()).to_matrix();
     }
 
     pub fn update(&mut self) {
-        self.target = self.pos + (Rotation3::from(self.rot).transpose() * Vector3::z());
+        self.target = self.pos + (Rot3::from(self.rot).transpose() * Vec3::z());
     }
 
     pub fn rotate_x(&mut self, angle: f32) {
-        self.rotate_around_axis(Vector3::x().xyz(), angle, TransformSpace::Local);
+        self.rotate_around_axis(Vec3::x().xyz(), angle, TransformSpace::Local);
     }
 
     pub fn rotate_y(&mut self, angle: f32) {
-        self.rotate_around_axis(Vector3::y().xyz(), angle, TransformSpace::World);
+        self.rotate_around_axis(Vec3::y().xyz(), angle, TransformSpace::World);
     }
 
-    pub fn rotate_around_axis(&mut self, axis: Vector3<f32>, angle: f32, space: TransformSpace) {
+    pub fn rotate_around_axis(&mut self, axis: Vec3, angle: f32, space: TransformSpace) {
         let axis = axis.normalize();
         let axis = match space {
             TransformSpace::Local => axis,
             TransformSpace::World => self.iso.try_inverse().unwrap().transform_vector(&axis),
         };
-        self.rot = UnitQuaternion::from_scaled_axis(axis * angle) * self.rot;
+        self.rot = UnitQuat::from_scaled_axis(axis * angle) * self.rot;
         self.rebuild_iso();
         self.update();
     }
