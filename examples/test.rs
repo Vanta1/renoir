@@ -1,6 +1,5 @@
 // This file should serve as an example for game devs new to renoired, easy to follow
 
-use nalgebra::Vector3;
 use renoired::prelude::*;
 
 fn main() {
@@ -15,6 +14,7 @@ fn main() {
     game.run(move |rn| {
         // 'rn' is an abbreviation of Renoired here.
 
+        // TODO: add a way to set this before running the game.
         rn.grab_cursor(true);
 
         if (rn.input.pressed(Key::C) && rn.input.pressed(Key::Ctrl)) || rn.input.pressed(Key::Q) {
