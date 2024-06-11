@@ -34,8 +34,8 @@ fn main() {
 
         let mouse_move = rn.input.get_mouse_delta();
 
-        rn.camera.rotate_around_axis(Vector3::y().xyz(), mouse_move.0 / 100.0, TransformSpace::World);
-        rn.camera.rotate_around_axis(Vector3::x().xyz(), -mouse_move.1 / 100.0, TransformSpace::Local);
+        rn.camera.rotate_y(mouse_move.0 / 100.0);
+        rn.camera.rotate_x(-mouse_move.1 / 100.0);
         rn.camera.set_translate(player.0, player.1, player.2);
 
         println!("{}, {}", mouse_move.0, mouse_move.1);

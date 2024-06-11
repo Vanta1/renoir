@@ -79,12 +79,21 @@ impl CameraController {
         }
     }
 
+    // TODO: move this into rotate_around_axis prob, and get rid of the 'iso' field.
     fn rebuild_iso(&mut self) {
         self.iso = (Translation3::new(self.pos.x, self.pos.y, self.pos.z) * Rotation3::from(self.rot).transpose()).to_matrix();
     }
 
     pub fn update(&mut self) {
         self.target = self.pos + (Rotation3::from(self.rot).transpose() * Vector3::z());
+    }
+
+    pub fn rotate_x(&mut self, angle: f32) {
+        self.rotate_around_axis(Vector3::x().xyz(), angle, TransformSpace::Local);
+    }
+
+    pub fn rotate_y(&mut self, angle: f32) {
+        self.rotate_around_axis(Vector3::y().xyz(), angle, TransformSpace::World);
     }
 
     pub fn rotate_around_axis(&mut self, axis: Vector3<f32>, angle: f32, space: TransformSpace) {
@@ -102,6 +111,6 @@ impl CameraController {
         self.pos.x = x;
         self.pos.y = y;
         self.pos.z = z;
-        self.rebuild_iso()
+        self.rebuild_iso();
     }
 }
