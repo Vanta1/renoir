@@ -1,7 +1,7 @@
 use wgpu::SurfaceConfiguration;
 
-use crate::math::OPENGL_TO_WGPU_MATRIX;
 use crate::math::prelude::*;
+use crate::math::OPENGL_TO_WGPU_MATRIX;
 
 pub enum TransformSpace {
     Local,
@@ -60,7 +60,7 @@ pub struct CameraController {
     pub pos: Point3,
     pub target: Point3,
     iso: Mat4,
-    rot: UnitQuat, 
+    rot: UnitQuat,
 }
 
 impl CameraController {
@@ -75,7 +75,9 @@ impl CameraController {
 
     // TODO: move this into rotate_around_axis prob, and get rid of the 'iso' field.
     fn rebuild_iso(&mut self) {
-        self.iso = (Trans3::new(self.pos.x, self.pos.y, self.pos.z) * Rot3::from(self.rot).transpose()).to_matrix();
+        self.iso = (Trans3::new(self.pos.x, self.pos.y, self.pos.z)
+            * Rot3::from(self.rot).transpose())
+        .to_matrix();
     }
 
     pub fn update(&mut self) {

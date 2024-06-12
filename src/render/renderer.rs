@@ -10,8 +10,8 @@ use wgpu::{
 use winit::{dpi::PhysicalSize, window::Window};
 
 use crate::camera::{self, CameraController};
-use crate::render::texture;
 use crate::math::prelude::*;
+use crate::render::texture;
 
 #[rustfmt::skip]
 const VERTICES: &[Vertex] = &[
@@ -306,7 +306,8 @@ impl<'a> Renderer<'a> {
             self.config.width = new_size.width;
             self.config.height = new_size.height;
             self.surface.configure(&self.device, &self.config);
-            self.depth_texture = texture::Texture::create_depth_texture(&self.device, &self.config, "depth_texture");
+            self.depth_texture =
+                texture::Texture::create_depth_texture(&self.device, &self.config, "depth_texture");
         }
     }
 
