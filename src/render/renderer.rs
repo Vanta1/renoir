@@ -12,14 +12,16 @@ use winit::{dpi::PhysicalSize, window::Window};
 use crate::camera::{self, CameraController};
 use crate::math::prelude::*;
 use crate::render::texture;
+use crate::render::instance;
+use crate::render::vertex;
 
 #[rustfmt::skip]
-const VERTICES: &[Vertex] = &[
-    Vertex { position: [-0.0868241, 0.49240386, 0.0], tex_coords: [0.4131759, 0.00759614], },
-    Vertex { position: [-0.49513406, 0.06958647, 0.0], tex_coords: [0.0048659444, 0.43041354], },
-    Vertex { position: [-0.21918549, -0.44939706, 0.0], tex_coords: [0.28081453, 0.949397], },
-    Vertex { position: [0.35966998, -0.3473291, 0.0], tex_coords: [0.85967, 0.84732914], },
-    Vertex { position: [0.44147372, 0.2347359, 0.0], tex_coords: [0.9414737, 0.2652641], },
+const VERTICES: &[vertex::Vertex] = &[
+    vertex::Vertex { position: Vec3::new(-0.0868241, 0.49240386, 0.0),   tex_coords: Vec2::new(0.4131759, 0.00759614) },
+    vertex::Vertex { position: Vec3::new(-0.49513406, 0.06958647, 0.0),  tex_coords: Vec2::new(0.0048659444, 0.43041354) },
+    vertex::Vertex { position: Vec3::new(-0.21918549, -0.44939706, 0.0), tex_coords: Vec2::new(0.28081453, 0.949397), },
+    vertex::Vertex { position: Vec3::new(0.35966998, -0.3473291, 0.0),   tex_coords: Vec2::new(0.85967, 0.84732914), },
+    vertex::Vertex { position: Vec3::new(0.44147372, 0.2347359, 0.0),    tex_coords: Vec2::new(0.9414737, 0.2652641), },
 ];
 
 const INDICES: &[u16] = &[0, 1, 4, 1, 2, 4, 2, 3, 4];
@@ -49,7 +51,7 @@ pub struct Renderer<'a> {
     camera_uniform: camera::CameraUniform,
     camera_buffer: Buffer,
     camera_bind_group: BindGroup,
-    instances: Vec<Instance>,
+    instances: Vec<instance::Instance>,
     instance_buffer: wgpu::Buffer,
 }
 
@@ -201,7 +203,7 @@ impl<'a> Renderer<'a> {
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: "vs_main",
-                buffers: &[Vertex::desc(), Instance::desc()],
+                buffers: &[vertex::Vertex::desc(), instance::Instance::desc()],
                 compilation_options: PipelineCompilationOptions::default(),
             },
             fragment: Some(wgpu::FragmentState {
@@ -265,7 +267,7 @@ impl<'a> Renderer<'a> {
                         Rot3::from_axis_angle(&nalgebra::Unit::new_normalize(position.coords), 45.0)
                     };
 
-                    Instance {
+                    instance::Instance {
                         isometry: (Trans3::from(position) * rotation).into(),
                     }
                 })
@@ -311,16 +313,8 @@ impl<'a> Renderer<'a> {
         }
     }
 
-    pub fn render(&mut self, camera: &mut CameraController) -> Result<(), wgpu::SurfaceError> {
-        camera.update();
-        self.camera.eye = camera.pos;
-        self.camera.target = camera.target;
-        self.camera_uniform.update_view_proj(&self.camera);
-        self.queue.write_buffer(
-            &self.camera_buffer,
-            0,
-            bytemuck::cast_slice(&[self.camera_uniform]),
-        );
+    pub fn render(&mut self, camera_controller: &mut CameraController) -> Result<(), wgpu::SurfaceError> {
+        self.camera.write_camera_controller_to_queue(camera_controller, self.camera_uniform, &self.camera_buffer, &self.queue);
 
         let output = self.surface.get_current_texture()?;
         let view = output
@@ -374,76 +368,5 @@ impl<'a> Renderer<'a> {
         output.present();
 
         Ok(())
-    }
-}
-
-#[repr(C)]
-#[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
-struct Vertex {
-    position: [f32; 3],
-    tex_coords: [f32; 2],
-}
-
-impl Vertex {
-    fn desc() -> wgpu::VertexBufferLayout<'static> {
-        use std::mem;
-        wgpu::VertexBufferLayout {
-            array_stride: mem::size_of::<Vertex>() as wgpu::BufferAddress,
-            step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &[
-                wgpu::VertexAttribute {
-                    offset: 0,
-                    shader_location: 0,
-                    format: wgpu::VertexFormat::Float32x3,
-                },
-                wgpu::VertexAttribute {
-                    offset: mem::size_of::<[f32; 3]>() as wgpu::BufferAddress,
-                    shader_location: 1,
-                    format: wgpu::VertexFormat::Float32x2, // NEW!
-                },
-            ],
-        }
-    }
-}
-
-#[repr(C)]
-#[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
-struct Instance {
-    isometry: Mat4,
-}
-
-impl Instance {
-    fn desc() -> wgpu::VertexBufferLayout<'static> {
-        use std::mem;
-        wgpu::VertexBufferLayout {
-            array_stride: mem::size_of::<Instance>() as wgpu::BufferAddress,
-            step_mode: wgpu::VertexStepMode::Instance,
-            attributes: &[
-                // A mat4 takes up 4 vertex slots as it is technically 4 vec4s. We need to define a slot
-                // for each vec4. We'll have to reassemble the mat4 in the shader.
-                wgpu::VertexAttribute {
-                    offset: 0,
-                    // While our vertex shader only uses locations 0, and 1 now, in later tutorials, we'll
-                    // be using 2, 3, and 4, for Vertex. We'll start at slot 5, not conflict with them later
-                    shader_location: 5,
-                    format: wgpu::VertexFormat::Float32x4,
-                },
-                wgpu::VertexAttribute {
-                    offset: mem::size_of::<[f32; 4]>() as wgpu::BufferAddress,
-                    shader_location: 6,
-                    format: wgpu::VertexFormat::Float32x4,
-                },
-                wgpu::VertexAttribute {
-                    offset: mem::size_of::<[f32; 8]>() as wgpu::BufferAddress,
-                    shader_location: 7,
-                    format: wgpu::VertexFormat::Float32x4,
-                },
-                wgpu::VertexAttribute {
-                    offset: mem::size_of::<[f32; 12]>() as wgpu::BufferAddress,
-                    shader_location: 8,
-                    format: wgpu::VertexFormat::Float32x4,
-                },
-            ],
-        }
     }
 }

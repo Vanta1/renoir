@@ -6,6 +6,7 @@
 //! be useful.
 
 pub type Vec3 = nalgebra::Vector3<f32>;
+pub type Vec2 = nalgebra::Vector2<f32>;
 pub type Point3 = nalgebra::Point3<f32>;
 pub type Mat4 = nalgebra::Matrix4<f32>;
 pub type Quat = nalgebra::Quaternion<f32>;
@@ -21,6 +22,7 @@ pub mod prelude {
     pub use super::Trans3;
     pub use super::UnitQuat;
     pub use super::Vec3;
+    pub use super::Vec2;
 }
 
 #[rustfmt::skip]
