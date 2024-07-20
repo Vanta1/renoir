@@ -205,6 +205,12 @@ impl RenoiredInput {
     */
 }
 
+impl Default for RenoiredInput {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 // taken from winit::keyboard::KeyCode, with additional modifiers and "KeyA" changed to "A" for example
 #[derive(Debug)]
 #[allow(dead_code)]

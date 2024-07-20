@@ -5,11 +5,12 @@ use crate::camera::CameraController;
 use crate::input::RenoiredInput;
 use crate::time::DeltaTime;
 
+/// Similar to winit's 'ControlFlow', this tells the RenoiredApp when it should close.
+#[derive(Default)]
 pub struct Flow {
     should_close: bool,
 }
 
-/// Similar to winit's 'ControlFlow', this tells the RenoiredApp when it should close.
 impl Flow {
     pub fn new() -> Self {
         Flow {
@@ -26,6 +27,7 @@ impl Flow {
     }
 }
 
+#[derive(Default)]
 pub struct RenoiredAppState {
     pub window: Option<Arc<Window>>, // window needs to be an option as one can only be created with an ActiveEventLoop
     pub input: RenoiredInput,

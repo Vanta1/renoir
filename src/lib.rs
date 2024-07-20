@@ -23,9 +23,12 @@ pub mod prelude {
     pub use crate::RenoiredApp;
 }
 
+#[derive(Default)]
 pub struct RenoiredApp {
     renderer: Option<Renderer<'static>>,
     pub state: RenoiredAppState,
+    // this type is only used here, and only one can exist in the entire program, so idc if it's complex
+    #[allow(clippy::type_complexity)]
     run_fn: Option<Box<dyn FnMut(&mut RenoiredAppState)>>,
 }
 

@@ -52,7 +52,7 @@ impl Camera {
     fn build_view_projection_matrix(&self) -> Mat4 {
         let view = Mat4::look_at_rh(&self.pos, &self.target, &self.up);
         let proj = Mat4::new_perspective(self.aspect, self.fovy, self.znear, self.zfar);
-        return OPENGL_TO_WGPU_MATRIX * proj * view;
+        OPENGL_TO_WGPU_MATRIX * proj * view
     }
 
     pub(crate) fn sync_to(&mut self, camera_controller: &CameraController) {
@@ -61,23 +61,19 @@ impl Camera {
     }
 
     pub(crate) fn write_camera_controller_to_queue(
-        &mut self, 
-        camera_controller: &mut CameraController, 
+        &mut self,
+        camera_controller: &mut CameraController,
         mut camera_uniform: CameraUniform,
         camera_buffer: &wgpu::Buffer,
         queue: &wgpu::Queue,
     ) {
         camera_controller.update();
-        self.sync_to(&camera_controller);
-        camera_uniform.update_view_proj(&self);
-        queue.write_buffer(
-            &camera_buffer,
-            0,
-            bytemuck::cast_slice(&[camera_uniform]),
-        );
+        self.sync_to(camera_controller);
+        camera_uniform.update_view_proj(self);
+        queue.write_buffer(camera_buffer, 0, bytemuck::cast_slice(&[camera_uniform]));
     }
 }
-
+#[derive(Default)]
 pub struct CameraController {
     pub pos: Point3,
     pub target: Point3,
