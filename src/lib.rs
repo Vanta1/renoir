@@ -113,6 +113,7 @@ impl ApplicationHandler for RenoiredApp {
                 self.state.time.update();
 
                 // Run the user's main function
+                // unwrapping is safe here as a RedrawRequested event cannot happen before the developer specifies a run_fn when calling RenoiredApp::run()
                 self.run_fn.as_mut().unwrap()(&mut self.state);
 
                 // if after running the main function the user has decided the application should close, close it.
