@@ -1,22 +1,10 @@
-#![allow(dead_code)] // TODO: get rid of thiss
-
-// TODO: add some sort of event/keypress streaming option (list of keyboard) so that text elements can be created
-// that players can type in without having to check all keys to determine which is pressed
-// .. this could also be accomplished with a way to get a stream of all pressed keys
-
-// #[allow(unused_imports)]
-// use renoir_proc_macros::VariantVector;
-
+use strum::EnumCount;
 use winit::{
     event::{ElementState, MouseButton, MouseScrollDelta},
     keyboard::PhysicalKey,
 };
 
-// Because I want to use VirtualKeycode as an index into a list of keys, we get the number of
-// possible VirtualKeycodes and then subtract one as arrays are zero-indexed.
-// const NUM_KEYCODES: usize = std::mem::variant_count::<winit::keyboard::KeyCode>();
-const NUM_KEYCODES: usize = 194 + 4; // 194 winit, 4 provided by renoired
-
+/// Represents the state of a button (keyboard and mouse). JustPressed & JustReleased mean that the key's state has changed since the last processed engine tick.
 #[derive(Clone, Copy, PartialEq, Debug, Default)]
 pub enum KeyState {
     JustPressed,
@@ -83,7 +71,8 @@ impl MouseState {
 }
 
 pub struct RenoiredInput {
-    keys: [KeyState; NUM_KEYCODES],
+    keys: [KeyState; Key::COUNT],
+    pub(crate) key_stream: Vec<(Key, KeyState)>,
     prev_modifiers_state: winit::keyboard::ModifiersState,
     pub(crate) mouse: MouseState,
 }
@@ -91,50 +80,61 @@ pub struct RenoiredInput {
 impl RenoiredInput {
     pub fn new() -> Self {
         RenoiredInput {
-            keys: [KeyState::Released; NUM_KEYCODES],
+            keys: [KeyState::Released; Key::COUNT],
+            key_stream: Vec::new(),
             prev_modifiers_state: winit::keyboard::ModifiersState::empty(),
             mouse: MouseState::default(),
         }
     }
 
+    // this is called after the run_fn, so that held keys are handled correctly.
+    // all the other setters are called in the main loop in lib.rs
     pub(crate) fn update(&mut self) {
         self.mouse.update();
 
         self.keys.iter_mut().for_each(|key| {
             key.update();
         });
+
+        self.key_stream.clear();
     }
 
     pub(crate) fn set_key(&mut self, input: winit::event::KeyEvent) {
         match input.physical_key {
-            PhysicalKey::Code(keycode) => self.keys[keycode as usize] = input.state.into(),
+            PhysicalKey::Code(keycode) => {
+                self.keys[keycode as usize] = input.state.into();
+                self.key_stream.push((
+                    Key::from_repr(keycode as usize).unwrap(),
+                    input.state.into(),
+                ))
+            }
             PhysicalKey::Unidentified(_) => { /* TODO: figure out what to do with these */ }
         }
     }
 
     pub(crate) fn set_mods(&mut self, mods: winit::keyboard::ModifiersState) {
         if mods.shift_key() && !self.prev_modifiers_state.shift_key() {
-            self.keys[NUM_KEYCODES - 4] = KeyState::JustPressed
+            self.keys[Key::Shift as usize] = KeyState::JustPressed;
         } else if !mods.shift_key() && self.prev_modifiers_state.shift_key() {
-            self.keys[NUM_KEYCODES - 4] = KeyState::JustReleased
+            self.keys[Key::Shift as usize] = KeyState::JustReleased
         }
 
         if mods.control_key() && !self.prev_modifiers_state.control_key() {
-            self.keys[NUM_KEYCODES - 3] = KeyState::JustPressed
+            self.keys[Key::Ctrl as usize] = KeyState::JustPressed
         } else if !mods.control_key() && self.prev_modifiers_state.control_key() {
-            self.keys[NUM_KEYCODES - 3] = KeyState::JustReleased
+            self.keys[Key::Ctrl as usize] = KeyState::JustReleased
         }
 
         if mods.alt_key() && !self.prev_modifiers_state.alt_key() {
-            self.keys[NUM_KEYCODES - 2] = KeyState::JustPressed
+            self.keys[Key::Alt as usize] = KeyState::JustPressed
         } else if !mods.alt_key() && self.prev_modifiers_state.alt_key() {
-            self.keys[NUM_KEYCODES - 2] = KeyState::JustReleased
+            self.keys[Key::Alt as usize] = KeyState::JustReleased
         }
 
         if mods.super_key() && !self.prev_modifiers_state.super_key() {
-            self.keys[NUM_KEYCODES - 1] = KeyState::JustPressed
+            self.keys[Key::Logo as usize] = KeyState::JustPressed
         } else if !mods.super_key() && self.prev_modifiers_state.super_key() {
-            self.keys[NUM_KEYCODES - 1] = KeyState::JustReleased
+            self.keys[Key::Logo as usize] = KeyState::JustReleased
         }
 
         self.prev_modifiers_state = mods;
@@ -189,20 +189,6 @@ impl RenoiredInput {
     }
 
     // TODO: add functions for getting mouse buttons. im too tired to pick names.
-
-    /* TODO: I dont think this can be implemented without a proc macro to get a Vec of keys, that we can use 'index' as an index into to
-             get a list of pressed keys w/ associated renoir Key names
-    pub fn get_pressed(&self) {
-        self.keys.iter().enumerate().map(|(index, key)| match key {
-            KeyState::JustPressed | KeyState::Pressed => {
-
-            }
-            _ => {}
-        });
-
-        todo!()
-    }
-    */
 }
 
 impl Default for RenoiredInput {
@@ -211,8 +197,8 @@ impl Default for RenoiredInput {
     }
 }
 
-// taken from winit::keyboard::KeyCode, with additional modifiers and "KeyA" changed to "A" for example
-#[derive(Debug)]
+/// Taken from winit::keyboard::KeyCode, with additional modifiers and "KeyA" changed to "A" for example
+#[derive(Debug, strum::EnumCount, strum::FromRepr)]
 #[allow(dead_code)]
 pub enum Key {
     Backquote,

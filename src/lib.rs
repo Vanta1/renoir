@@ -93,6 +93,7 @@ impl ApplicationHandler for RenoiredApp {
         event: WindowEvent,
     ) {
         match event {
+            // TODO: add some way to pass this to the game before the program just quits
             WindowEvent::CloseRequested => {
                 event_loop.exit();
             }
@@ -121,9 +122,15 @@ impl ApplicationHandler for RenoiredApp {
                     event_loop.exit()
                 }
 
+                // TODO: this is producing multiple inputs for a held key, which may be the desired behavior but I need to think it through
+                if !self.state.input.key_stream.is_empty() {
+                    //dbg!(&self.state.input.key_stream);
+                }
                 // update the input struct, done after running the user's main function so that we don't unset keys before we need to.
                 self.state.input.update();
 
+                // this should always unwrap, as RedrawRequested only happens after the renderer has been initialized.
+                // additionally, destructuring in order to get a single mutable reference makes this whole thing simpler
                 if let Some(renderer) = self.renderer.as_mut() {
                     match renderer.render(&mut self.state.camera) {
                         Ok(_) => {}

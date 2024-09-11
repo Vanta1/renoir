@@ -11,6 +11,7 @@ log = "0.4.21"
 nalgebra = { version = "0.32.5", features = ["bytemuck"] }
 pollster = "0.3.0"
 raw-window-handle = "0.6.2"
+strum = { version = "0.26.3", features = [ "derive" ] }
 wgpu = "0.20.0"
 winit = "0.30.0"
 
