@@ -18,7 +18,7 @@ use state::RenoiredAppState;
 
 pub mod prelude {
     pub use crate::camera::TransformSpace;
-    pub use crate::input::Key;
+    pub use crate::input::{Key, MouseBtn};
     pub use crate::math::prelude::*;
     pub use crate::RenoiredApp;
 }

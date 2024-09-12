@@ -50,21 +50,31 @@ impl From<ElementState> for KeyState {
     }
 }
 
+// taken from winit::event::MouseButton
+#[derive(Debug, strum::EnumCount, strum::FromRepr)]
+#[allow(dead_code)]
+pub enum MouseBtn {
+    Left,
+    Right,
+    Middle,
+    Back,
+    Forward,
+}
+
 #[derive(Default)]
 pub struct MouseState {
     // winit supports more mouse buttons than this but.... who cares about those buttons (for now (i should find a better way to represent this))
-    left_click: KeyState,
-    middle_click: KeyState,
-    right_click: KeyState,
+    buttons: [KeyState; MouseBtn::COUNT],
     cursor_delta: (f32, f32),
     scroll_delta: (f32, f32),
 }
 
 impl MouseState {
     fn update(&mut self) {
-        self.left_click.update();
-        self.middle_click.update();
-        self.right_click.update();
+        self.buttons.iter_mut().for_each(|btn| {
+            btn.update();
+        });
+
         self.cursor_delta = (0.0, 0.0);
         self.scroll_delta = (0.0, 0.0);
     }
@@ -108,7 +118,9 @@ impl RenoiredInput {
                     input.state.into(),
                 ))
             }
-            PhysicalKey::Unidentified(_) => { /* TODO: figure out what to do with these */ }
+            PhysicalKey::Unidentified(_) => {
+                // unhandled by RenoiredInput as of now, but I could add these to some sort of extra input field
+            }
         }
     }
 
@@ -142,10 +154,12 @@ impl RenoiredInput {
 
     pub(crate) fn set_mouse_button(&mut self, state: ElementState, button: MouseButton) {
         match button {
-            MouseButton::Left => self.mouse.left_click = state.into(),
-            MouseButton::Middle => self.mouse.middle_click = state.into(),
-            MouseButton::Right => self.mouse.middle_click = state.into(),
-            _ => {}
+            MouseButton::Left => self.mouse.buttons[0] = state.into(),
+            MouseButton::Right => self.mouse.buttons[1] = state.into(),
+            MouseButton::Middle => self.mouse.buttons[2] = state.into(),
+            MouseButton::Back => self.mouse.buttons[3] = state.into(),
+            MouseButton::Forward => self.mouse.buttons[4] = state.into(),
+            MouseButton::Other(_id) => { /* currently unhandled */ }
         }
     }
 
@@ -184,11 +198,29 @@ impl RenoiredInput {
         self.keys[key as usize].just_released()
     }
 
+    pub fn get_mouse_btn(&self, btn: MouseBtn) -> KeyState {
+        self.mouse.buttons[btn as usize]
+    }
+
+    pub fn mouse_pressed(&self, btn: MouseBtn) -> bool {
+        self.mouse.buttons[btn as usize].pressed()
+    }
+
+    pub fn mouse_just_pressed(&self, btn: MouseBtn) -> bool {
+        self.mouse.buttons[btn as usize].just_pressed()
+    }
+
+    pub fn mouse_released(&self, btn: MouseBtn) -> bool {
+        self.mouse.buttons[btn as usize].released()
+    }
+
+    pub fn mouse_just_released(&self, btn: MouseBtn) -> bool {
+        self.mouse.buttons[btn as usize].just_released()
+    }
+
     pub fn get_mouse_delta(&self) -> (f32, f32) {
         self.mouse.cursor_delta
     }
-
-    // TODO: add functions for getting mouse buttons. im too tired to pick names.
 }
 
 impl Default for RenoiredInput {
