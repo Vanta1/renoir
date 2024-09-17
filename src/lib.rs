@@ -7,11 +7,13 @@ use winit::{
 };
 
 mod camera;
+mod flow;
 mod input;
 mod math;
 mod render;
 mod state;
 mod time;
+mod window_options;
 
 use render::renderer::Renderer;
 use state::RenoiredAppState;
@@ -26,7 +28,8 @@ pub mod prelude {
 #[derive(Default)]
 pub struct RenoiredApp {
     renderer: Option<Renderer<'static>>,
-    pub state: RenoiredAppState,
+    window: Option<Arc<Window>>,
+    state: RenoiredAppState,
     // this type is only used here, and only one can exist in the entire program, so idc if it's complex
     #[allow(clippy::type_complexity)]
     run_fn: Option<Box<dyn FnMut(&mut RenoiredAppState)>>,
@@ -36,6 +39,7 @@ impl RenoiredApp {
     pub fn new() -> Self {
         RenoiredApp {
             renderer: None,
+            window: None,
             run_fn: None,
             state: RenoiredAppState::new(),
         }
@@ -66,7 +70,7 @@ impl ApplicationHandler for RenoiredApp {
         );
         let renderer = Renderer::new(Arc::clone(&window));
 
-        self.state.window = Some(window);
+        self.window = Some(window);
         self.renderer = Some(renderer);
     }
 
@@ -117,6 +121,11 @@ impl ApplicationHandler for RenoiredApp {
                 // unwrapping is safe here as a RedrawRequested event cannot happen before the developer specifies a run_fn when calling RenoiredApp::run()
                 self.run_fn.as_mut().unwrap()(&mut self.state);
 
+                // apply WindowOptions to Window
+                self.state
+                    .window_options
+                    .apply_to(self.window.as_ref().unwrap());
+
                 // if after running the main function the user has decided the application should close, close it.
                 if self.state.flow.should_close() {
                     event_loop.exit()
@@ -145,7 +154,7 @@ impl ApplicationHandler for RenoiredApp {
                     println!("Renderer wasn't initialized prior to trying to render.. ??");
                 }
 
-                self.state.window.as_ref().unwrap().request_redraw();
+                self.window.as_ref().unwrap().request_redraw();
             }
             _ => {}
         }

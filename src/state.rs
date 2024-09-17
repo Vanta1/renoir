@@ -1,35 +1,13 @@
-use std::sync::Arc;
-use winit::window::{CursorGrabMode, Window};
-
 use crate::camera::CameraController;
+use crate::flow::Flow;
 use crate::input::RenoiredInput;
 use crate::time::DeltaTime;
+use crate::window_options::WindowOptions;
 
-/// Similar to winit's 'ControlFlow', this tells the RenoiredApp when it should close.
-#[derive(Default)]
-pub struct Flow {
-    should_close: bool,
-}
-
-impl Flow {
-    pub fn new() -> Self {
-        Flow {
-            should_close: false,
-        }
-    }
-
-    pub fn should_close(&self) -> bool {
-        self.should_close
-    }
-
-    pub fn close(&mut self) {
-        self.should_close = true;
-    }
-}
-
+/// RenoiredAppState contains everything that the game dev can modify and read while the app is running.
 #[derive(Default)]
 pub struct RenoiredAppState {
-    pub window: Option<Arc<Window>>, // window needs to be an option as one can only be created with an ActiveEventLoop
+    pub window_options: WindowOptions,
     pub input: RenoiredInput,
     pub time: DeltaTime,
     pub flow: Flow,
@@ -39,7 +17,7 @@ pub struct RenoiredAppState {
 impl RenoiredAppState {
     pub fn new() -> Self {
         Self {
-            window: None,
+            window_options: WindowOptions::new(),
             input: RenoiredInput::new(),
             time: DeltaTime::new(),
             flow: Flow::new(),
@@ -51,19 +29,7 @@ impl RenoiredAppState {
         self.flow.should_close = true;
     }
 
-    pub fn grab_cursor(&self, grab: bool) {
-        // the result of set_cursor_grab is ignored as it's only necessary for Wayland, and so it doesn't matter on other platforms
-
-        if let Some(window) = self.window.as_ref() {
-            if grab {
-                window.set_cursor_visible(false);
-                let _ = window.set_cursor_grab(CursorGrabMode::Locked);
-            } else {
-                self.window.as_ref().unwrap().set_cursor_visible(true);
-                let _ = window.set_cursor_grab(CursorGrabMode::None);
-            }
-        } else {
-            // TODO: implement a window configuration that can be initialized and edited prior to window creation, and then applied after
-        }
+    pub fn grab_cursor(&mut self, grab: bool) {
+        self.window_options.grab_cursor = grab;
     }
 }

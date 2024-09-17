@@ -11,8 +11,8 @@ use winit::{dpi::PhysicalSize, window::Window};
 
 use crate::camera::{self, CameraController};
 use crate::math::prelude::*;
-use crate::render::texture;
 use crate::render::instance;
+use crate::render::texture;
 use crate::render::vertex;
 
 #[rustfmt::skip]
@@ -313,8 +313,16 @@ impl<'a> Renderer<'a> {
         }
     }
 
-    pub fn render(&mut self, camera_controller: &mut CameraController) -> Result<(), wgpu::SurfaceError> {
-        self.camera.write_camera_controller_to_queue(camera_controller, self.camera_uniform, &self.camera_buffer, &self.queue);
+    pub fn render(
+        &mut self,
+        camera_controller: &mut CameraController,
+    ) -> Result<(), wgpu::SurfaceError> {
+        self.camera.write_camera_controller_to_queue(
+            camera_controller,
+            self.camera_uniform,
+            &self.camera_buffer,
+            &self.queue,
+        );
 
         let output = self.surface.get_current_texture()?;
         let view = output

@@ -5,7 +5,7 @@ use renoired::prelude::*;
 fn main() {
     println!("WASD or the mouse to move, Press Ctrl+C or Q to close this game!");
 
-    let mut player: (f32, f32, f32) = (0., 0., -10.);
+    let mut player = Vec3::new(0., 3., 8.);
     // TODO: add way to set up camera before running the game
     let speed: f32 = 3.;
 
@@ -21,14 +21,14 @@ fn main() {
             rn.close();
         }
 
-        player.0 += ((rn.input.pressed(Key::D) as i32 - rn.input.pressed(Key::A) as i32) as f32)
+        player.x += ((rn.input.pressed(Key::D) as i32 - rn.input.pressed(Key::A) as i32) as f32)
             * speed
             * rn.time.delta_time();
-        player.1 += ((rn.input.pressed(Key::Space) as i32 - rn.input.pressed(Key::Shift) as i32)
+        player.y += ((rn.input.pressed(Key::Space) as i32 - rn.input.pressed(Key::Shift) as i32)
             as f32)
             * speed
             * rn.time.delta_time();
-        player.2 -= ((rn.input.pressed(Key::W) as i32 - rn.input.pressed(Key::S) as i32) as f32)
+        player.z -= ((rn.input.pressed(Key::W) as i32 - rn.input.pressed(Key::S) as i32) as f32)
             * speed
             * rn.time.delta_time();
 
@@ -36,6 +36,8 @@ fn main() {
 
         rn.camera.rotate_y(mouse_move.0 / 100.0);
         rn.camera.rotate_x(-mouse_move.1 / 100.0);
-        rn.camera.set_translate(player.0, player.1, player.2);
+        rn.camera.set_translate(player.x, player.y, player.z);
+
+        dbg!(player);
     })
 }
