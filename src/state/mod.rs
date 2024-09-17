@@ -1,8 +1,14 @@
-use crate::camera::CameraController;
-use crate::flow::Flow;
-use crate::input::RenoiredInput;
-use crate::time::DeltaTime;
-use crate::window_options::WindowOptions;
+pub mod camera;
+pub mod flow;
+pub mod input;
+pub mod time;
+pub mod window_options;
+
+use crate::state::camera::CameraController;
+use crate::state::flow::Flow;
+use crate::state::input::RenoiredInput;
+use crate::state::time::DeltaTime;
+use crate::state::window_options::WindowOptions;
 
 /// RenoiredAppState contains everything that the game dev can modify and read while the app is running.
 #[derive(Default)]

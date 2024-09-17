@@ -6,22 +6,17 @@ use winit::{
     window::{Window, WindowId},
 };
 
-mod camera;
-mod flow;
-mod input;
 mod math;
 mod render;
 mod state;
-mod time;
-mod window_options;
 
 use render::renderer::Renderer;
 use state::RenoiredAppState;
 
 pub mod prelude {
-    pub use crate::camera::TransformSpace;
-    pub use crate::input::{Key, MouseBtn};
     pub use crate::math::prelude::*;
+    pub use crate::state::camera::TransformSpace;
+    pub use crate::state::input::{Key, MouseBtn};
     pub use crate::RenoiredApp;
 }
 

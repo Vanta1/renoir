@@ -9,11 +9,11 @@ use wgpu::{
 
 use winit::{dpi::PhysicalSize, window::Window};
 
-use crate::camera::{self, CameraController};
 use crate::math::prelude::*;
 use crate::render::instance;
 use crate::render::texture;
 use crate::render::vertex;
+use crate::state::camera::{self, CameraController};
 
 #[rustfmt::skip]
 const VERTICES: &[vertex::Vertex] = &[
