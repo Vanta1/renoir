@@ -10,12 +10,10 @@ fn main() {
     let speed: f32 = 3.;
 
     let mut game = RenoiredApp::new();
+    game.grab_cursor(true);
 
     game.run(move |rn| {
         // 'rn' is an abbreviation of Renoired here.
-
-        // TODO: add a way to set this before running the game.
-        rn.grab_cursor(true);
 
         if (rn.input.pressed(Key::C) && rn.input.pressed(Key::Ctrl)) || rn.input.pressed(Key::Q) {
             rn.close();

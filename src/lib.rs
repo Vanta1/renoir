@@ -57,6 +57,10 @@ impl RenoiredApp {
             Err(e) => println!("{e}"),
         }
     }
+
+    pub fn grab_cursor(&mut self, grab: bool) {
+        self.state.grab_cursor(grab);
+    }
 }
 
 impl ApplicationHandler for RenoiredApp {
