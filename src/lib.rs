@@ -11,12 +11,13 @@ mod render;
 mod state;
 
 use render::renderer::Renderer;
-use state::RenoirAppState;
+use state::{window_options::WindowOptions, RenoirAppState};
 
 pub mod prelude {
     pub use crate::math::prelude::*;
     pub use crate::state::camera::TransformSpace;
     pub use crate::state::input::{Key, MouseBtn};
+    pub use crate::state::window_options::WindowOptions;
     pub use crate::RenoirApp;
 }
 
@@ -56,8 +57,8 @@ impl RenoirApp {
         }
     }
 
-    pub fn grab_cursor(&mut self, grab: bool) {
-        self.state.grab_cursor(grab);
+    pub fn window_options(&mut self, options: WindowOptions) {
+        self.state.window_options.set_options(options);
     }
 }
 
@@ -71,12 +72,8 @@ impl ApplicationHandler for RenoirApp {
                 .unwrap(),
         );
 
-        // TODO: this unwrap is panicking, which implies that 'resumed' is called before the window is created.
-        // where else should i put this agghhh ig its not strictly necessary but i dont want a delay
         // apply all changes the game dev has made to window settings before running
-        //self.state
-        //    .window_options
-        //    .apply_to(self.window.as_ref().unwrap());
+        self.state.window_options.apply_to(&window);
 
         let renderer = Renderer::new(Arc::clone(&window));
 
@@ -131,6 +128,7 @@ impl ApplicationHandler for RenoirApp {
                 // unwrapping is safe here as a RedrawRequested event cannot happen before the developer specifies a run_fn when calling RenoirApp::run()
                 self.run_fn.as_mut().unwrap()(&mut self.state);
 
+                // TODO: check if settings have changed before reapplying
                 // apply WindowOptions to Window
                 self.state
                     .window_options

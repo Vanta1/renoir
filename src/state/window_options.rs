@@ -1,9 +1,9 @@
 use winit::window::Window;
 
 pub struct WindowOptions {
-    fullscreen: bool,
-    grab_cursor: bool,
-    show_cursor: bool,
+    pub fullscreen: bool,
+    pub grab_cursor: bool,
+    pub show_cursor: bool,
 }
 
 impl WindowOptions {
@@ -13,7 +13,7 @@ impl WindowOptions {
         }
     }
 
-    // applies own window settings to a winit::window, this is called from the main loop only
+    // applies own window settings to a winit window, this is called from the main loop only
     pub(crate) fn apply_to(&self, window: &Window) {
         window.set_fullscreen(match self.fullscreen {
             true => Some(winit::window::Fullscreen::Borderless(None)),
@@ -28,8 +28,8 @@ impl WindowOptions {
         window.set_cursor_visible(self.show_cursor);
     }
 
-    pub(crate) fn set_cursor_grab(&mut self, grab: bool) {
-        self.grab_cursor = grab;
+    pub fn set_options(&mut self, options: Self) {
+        *self = options;
     }
 }
 

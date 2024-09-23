@@ -34,8 +34,4 @@ impl RenoirAppState {
     pub fn close(&mut self) {
         self.flow.should_close = true;
     }
-
-    pub fn grab_cursor(&mut self, grab: bool) {
-        self.window_options.set_cursor_grab(grab);
-    }
 }

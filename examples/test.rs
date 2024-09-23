@@ -10,7 +10,12 @@ fn main() {
     let speed: f32 = 3.;
 
     let mut game = RenoirApp::new();
-    game.grab_cursor(true);
+
+    game.window_options(WindowOptions {
+        fullscreen: true,
+        grab_cursor: true,
+        show_cursor: false,
+    });
 
     // 'rn' is an abbreviation of Renoir here.
     game.run(move |rn| {
