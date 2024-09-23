@@ -12,9 +12,8 @@ fn main() {
     let mut game = RenoiredApp::new();
     game.grab_cursor(true);
 
+    // 'rn' is an abbreviation of Renoired here.
     game.run(move |rn| {
-        // 'rn' is an abbreviation of Renoired here.
-
         if (rn.input.pressed(Key::C) && rn.input.pressed(Key::Ctrl)) || rn.input.pressed(Key::Q) {
             rn.close();
         }
@@ -35,7 +34,5 @@ fn main() {
         rn.camera.rotate_y(mouse_move.0 / 100.0);
         rn.camera.rotate_x(-mouse_move.1 / 100.0);
         rn.camera.set_translate(player.x, player.y, player.z);
-
-        dbg!(player);
     })
 }

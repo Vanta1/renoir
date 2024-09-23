@@ -42,9 +42,12 @@ impl RenoiredApp {
 
     pub fn run(&mut self, run_fn: impl FnMut(&mut RenoiredAppState) + 'static) {
         let event_loop = EventLoop::new().unwrap();
+
+        // recommended for games
         event_loop.set_control_flow(ControlFlow::Poll);
         self.run_fn = Some(Box::new(run_fn));
         env_logger::init();
+
         match event_loop.run_app(self) {
             Ok(_) => {
                 println!("See you next time...") // i miss osu
@@ -67,6 +70,14 @@ impl ApplicationHandler for RenoiredApp {
                 .create_window(Window::default_attributes())
                 .unwrap(),
         );
+
+        // TODO: this unwrap is panicking, which implies that 'resumed' is called before the window is created.
+        // where else should i put this agghhh ig its not strictly necessary but i dont want a delay
+        // apply all changes the game dev has made to window settings before running
+        //self.state
+        //    .window_options
+        //    .apply_to(self.window.as_ref().unwrap());
+
         let renderer = Renderer::new(Arc::clone(&window));
 
         self.window = Some(window);
