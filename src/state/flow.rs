@@ -1,4 +1,4 @@
-/// Similar to winit's 'ControlFlow', this tells the RenoiredApp when it should close.
+/// Similar to winit's 'ControlFlow', this tells the RenoirApp when it should close.
 #[derive(Default)]
 pub struct Flow {
     pub should_close: bool,

@@ -80,16 +80,16 @@ impl MouseState {
     }
 }
 
-pub struct RenoiredInput {
+pub struct RenoirInput {
     keys: [KeyState; Key::COUNT],
     pub(crate) key_stream: Vec<(Key, KeyState)>,
     prev_modifiers_state: winit::keyboard::ModifiersState,
     pub(crate) mouse: MouseState,
 }
 
-impl RenoiredInput {
+impl RenoirInput {
     pub fn new() -> Self {
-        RenoiredInput {
+        RenoirInput {
             keys: [KeyState::Released; Key::COUNT],
             key_stream: Vec::new(),
             prev_modifiers_state: winit::keyboard::ModifiersState::empty(),
@@ -119,7 +119,7 @@ impl RenoiredInput {
                 ))
             }
             PhysicalKey::Unidentified(_) => {
-                // unhandled by RenoiredInput as of now, but I could add these to some sort of extra input field
+                // unhandled by RenoirInput as of now, but I could add these to some sort of extra input field
             }
         }
     }
@@ -223,7 +223,7 @@ impl RenoiredInput {
     }
 }
 
-impl Default for RenoiredInput {
+impl Default for RenoirInput {
     fn default() -> Self {
         Self::new()
     }

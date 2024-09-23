@@ -6,25 +6,25 @@ pub mod window_options;
 
 use crate::state::camera::CameraController;
 use crate::state::flow::Flow;
-use crate::state::input::RenoiredInput;
+use crate::state::input::RenoirInput;
 use crate::state::time::DeltaTime;
 use crate::state::window_options::WindowOptions;
 
-/// RenoiredAppState contains everything that the game dev can modify and read while the app is running.
+/// RenoirAppState contains everything that the game dev can modify and read while the app is running.
 #[derive(Default)]
-pub struct RenoiredAppState {
+pub struct RenoirAppState {
     pub window_options: WindowOptions,
-    pub input: RenoiredInput,
+    pub input: RenoirInput,
     pub time: DeltaTime,
     pub flow: Flow,
     pub camera: CameraController,
 }
 
-impl RenoiredAppState {
+impl RenoirAppState {
     pub fn new() -> Self {
         Self {
             window_options: WindowOptions::new(),
-            input: RenoiredInput::new(),
+            input: RenoirInput::new(),
             time: DeltaTime::new(),
             flow: Flow::new(),
             camera: CameraController::new(),

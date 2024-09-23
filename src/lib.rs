@@ -11,36 +11,36 @@ mod render;
 mod state;
 
 use render::renderer::Renderer;
-use state::RenoiredAppState;
+use state::RenoirAppState;
 
 pub mod prelude {
     pub use crate::math::prelude::*;
     pub use crate::state::camera::TransformSpace;
     pub use crate::state::input::{Key, MouseBtn};
-    pub use crate::RenoiredApp;
+    pub use crate::RenoirApp;
 }
 
 #[derive(Default)]
-pub struct RenoiredApp {
+pub struct RenoirApp {
     renderer: Option<Renderer<'static>>,
     window: Option<Arc<Window>>,
-    state: RenoiredAppState,
+    state: RenoirAppState,
     // this type is only used here, and only one can exist in the entire program, so idc if it's complex
     #[allow(clippy::type_complexity)]
-    run_fn: Option<Box<dyn FnMut(&mut RenoiredAppState)>>,
+    run_fn: Option<Box<dyn FnMut(&mut RenoirAppState)>>,
 }
 
-impl RenoiredApp {
+impl RenoirApp {
     pub fn new() -> Self {
-        RenoiredApp {
+        RenoirApp {
             renderer: None,
             window: None,
             run_fn: None,
-            state: RenoiredAppState::new(),
+            state: RenoirAppState::new(),
         }
     }
 
-    pub fn run(&mut self, run_fn: impl FnMut(&mut RenoiredAppState) + 'static) {
+    pub fn run(&mut self, run_fn: impl FnMut(&mut RenoirAppState) + 'static) {
         let event_loop = EventLoop::new().unwrap();
 
         // recommended for games
@@ -61,7 +61,7 @@ impl RenoiredApp {
     }
 }
 
-impl ApplicationHandler for RenoiredApp {
+impl ApplicationHandler for RenoirApp {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         // I owe my life to this file: https://github.com/nical/lyon/blob/main/examples/wgpu/src/main.rs
         // TODO: double check that the Arc around Window is necessary
@@ -112,7 +112,7 @@ impl ApplicationHandler for RenoiredApp {
                 event_loop.exit();
             }
 
-            // Renoired uses a custom input system so that users don't have to deal with handling WindowEvents, it reads all inputs before running the main game loop and processes them with the RenoirInput structure
+            // Renoir uses a custom input system so that users don't have to deal with handling WindowEvents, it reads all inputs before running the main game loop and processes them with the RenoirInput structure
             WindowEvent::ModifiersChanged(modifiers) => {
                 self.state.input.set_mods(modifiers.state());
             }
@@ -128,7 +128,7 @@ impl ApplicationHandler for RenoiredApp {
                 self.state.time.update();
 
                 // Run the user's main function
-                // unwrapping is safe here as a RedrawRequested event cannot happen before the developer specifies a run_fn when calling RenoiredApp::run()
+                // unwrapping is safe here as a RedrawRequested event cannot happen before the developer specifies a run_fn when calling RenoirApp::run()
                 self.run_fn.as_mut().unwrap()(&mut self.state);
 
                 // apply WindowOptions to Window

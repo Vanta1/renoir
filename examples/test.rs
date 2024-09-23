@@ -1,6 +1,6 @@
-// This file should serve as an example for game devs new to renoired, easy to follow
+// This file should serve as an example for game devs new to Renoir, easy to follow
 
-use renoired::prelude::*;
+use renoir::prelude::*;
 
 fn main() {
     println!("WASD or the mouse to move, Press Ctrl+C or Q to close this game!");
@@ -9,10 +9,10 @@ fn main() {
     // TODO: add way to set up camera before running the game
     let speed: f32 = 3.;
 
-    let mut game = RenoiredApp::new();
+    let mut game = RenoirApp::new();
     game.grab_cursor(true);
 
-    // 'rn' is an abbreviation of Renoired here.
+    // 'rn' is an abbreviation of Renoir here.
     game.run(move |rn| {
         if (rn.input.pressed(Key::C) && rn.input.pressed(Key::Ctrl)) || rn.input.pressed(Key::Q) {
             rn.close();
