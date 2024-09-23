@@ -36,6 +36,6 @@ impl RenoirAppState {
     }
 
     pub fn grab_cursor(&mut self, grab: bool) {
-        self.window_options.grab_cursor = grab;
+        self.window_options.set_cursor_grab(grab);
     }
 }
