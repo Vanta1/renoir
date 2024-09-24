@@ -65,7 +65,6 @@ impl RenoirApp {
 impl ApplicationHandler for RenoirApp {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         // I owe my life to this file: https://github.com/nical/lyon/blob/main/examples/wgpu/src/main.rs
-        // TODO: double check that the Arc around Window is necessary
         let window = Arc::new(
             event_loop
                 .create_window(Window::default_attributes())

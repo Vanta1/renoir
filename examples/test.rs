@@ -17,27 +17,29 @@ fn main() {
         show_cursor: false,
     });
 
-    // 'rn' is an abbreviation of Renoir here.
-    game.run(move |rn| {
-        if (rn.input.pressed(Key::C) && rn.input.pressed(Key::Ctrl)) || rn.input.pressed(Key::Q) {
-            rn.close();
+    // 'ren' is a mutable reference to a RenoirAppState, which is the main way of interacting with the engine.
+    // it can be queried (e.g. ren.input.pressed(Key::C)) or edited (ren.camera.set_translate())
+    game.run(move |ren| {
+        if (ren.input.pressed(Key::C) && ren.input.pressed(Key::Ctrl)) || ren.input.pressed(Key::Q)
+        {
+            ren.close();
         }
 
-        player.x += ((rn.input.pressed(Key::D) as i32 - rn.input.pressed(Key::A) as i32) as f32)
+        player.x += ((ren.input.pressed(Key::D) as i32 - ren.input.pressed(Key::A) as i32) as f32)
             * speed
-            * rn.time.delta_time();
-        player.y += ((rn.input.pressed(Key::Space) as i32 - rn.input.pressed(Key::Shift) as i32)
+            * ren.time.delta_time();
+        player.y += ((ren.input.pressed(Key::Space) as i32 - ren.input.pressed(Key::Shift) as i32)
             as f32)
             * speed
-            * rn.time.delta_time();
-        player.z -= ((rn.input.pressed(Key::W) as i32 - rn.input.pressed(Key::S) as i32) as f32)
+            * ren.time.delta_time();
+        player.z -= ((ren.input.pressed(Key::W) as i32 - ren.input.pressed(Key::S) as i32) as f32)
             * speed
-            * rn.time.delta_time();
+            * ren.time.delta_time();
 
-        let mouse_move = rn.input.get_mouse_delta();
+        let mouse_move = ren.input.get_mouse_delta();
 
-        rn.camera.rotate_y(mouse_move.0 / 100.0);
-        rn.camera.rotate_x(-mouse_move.1 / 100.0);
-        rn.camera.set_translate(player.x, player.y, player.z);
+        ren.camera.rotate_y(mouse_move.0 / 100.0);
+        ren.camera.rotate_x(-mouse_move.1 / 100.0);
+        ren.camera.set_translate(player.x, player.y, player.z);
     })
 }
