@@ -2,6 +2,11 @@
 
 use renoir::prelude::*;
 
+enum ObjType {
+    Player,
+    Entity,
+}
+
 fn main() {
     println!("WASD or the mouse to move, Press Ctrl+C or Q to close this game!");
 
@@ -11,14 +16,22 @@ fn main() {
 
     let mut game = RenoirApp::new();
 
-    game.window_options(WindowOptions {
-        fullscreen: true,
-        grab_cursor: true,
-        show_cursor: false,
-    });
-
     // 'ren' is a mutable reference to a RenoirAppState, which is the main way of interacting with the engine.
     // it can be queried (e.g. ren.input.pressed(Key::C)) or edited (ren.camera.set_translate())
+    // RenoirApp::setup is run once at the beginning
+    game.setup(|ren| {
+        println!("Setting up...");
+        ren.window_options = WindowOptions {
+            fullscreen: true,
+            grab_cursor: true,
+            show_cursor: false,
+        };
+
+        ren.world.spawn((Vec3::new(0., 0., 0.), ObjType::Player));
+        ren.world.spawn((Vec3::new(0., 0., 0.), ObjType::Entity));
+    });
+
+    // RenoirApp::run is run every frame
     game.run(move |ren| {
         if (ren.input.pressed(Key::C) && ren.input.pressed(Key::Ctrl)) || ren.input.pressed(Key::Q)
         {

@@ -11,13 +11,14 @@ mod render;
 mod state;
 
 use render::renderer::Renderer;
-use state::{window_options::WindowOptions, RenoirAppState};
+use state::RenoirAppState;
 
 pub mod prelude {
     pub use crate::math::prelude::*;
     pub use crate::state::camera::TransformSpace;
     pub use crate::state::input::{Key, MouseBtn};
     pub use crate::state::window_options::WindowOptions;
+    pub use crate::state::RenoirAppState;
     pub use crate::RenoirApp;
 }
 
@@ -30,7 +31,7 @@ pub struct RenoirApp {
     #[allow(clippy::type_complexity)]
     run_fn: Option<Box<dyn FnMut(&mut RenoirAppState)>>,
     #[allow(clippy::type_complexity)]
-    setup_fn: Option<Box<dyn FnOnce(&mut RenoirAppState)>>,
+    setup_fn: Option<Box<dyn FnMut(&mut RenoirAppState)>>,
 }
 
 impl RenoirApp {
@@ -44,7 +45,7 @@ impl RenoirApp {
         }
     }
 
-    pub fn setup(&mut self, setup_fn: impl FnOnce(&mut RenoirAppState) + 'static) {
+    pub fn setup(&mut self, setup_fn: impl FnMut(&mut RenoirAppState) + 'static) {
         self.setup_fn = Some(Box::new(setup_fn));
     }
 
@@ -62,10 +63,6 @@ impl RenoirApp {
             }
             Err(e) => println!("{e}"),
         }
-    }
-
-    pub fn window_options(&mut self, options: WindowOptions) {
-        self.state.window_options.set_options(options);
     }
 }
 
@@ -127,6 +124,12 @@ impl ApplicationHandler for RenoirApp {
             }
 
             WindowEvent::RedrawRequested => {
+                // if a setup function has been set, run it, then remove it
+                if let Some(setup_fn) = self.setup_fn.as_mut() {
+                    setup_fn(&mut self.state);
+                    self.setup_fn = None;
+                }
+
                 // update delta time
                 self.state.time.update();
 
