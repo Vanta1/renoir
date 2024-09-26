@@ -3,8 +3,9 @@ use std::sync::Arc;
 use wgpu::util::DeviceExt;
 use wgpu::{
     Backends, BindGroup, Buffer, Device, DeviceDescriptor, Features, InstanceDescriptor, Limits,
-    PipelineCompilationOptions, PowerPreference, Queue, RenderPipeline, RequestAdapterOptions,
-    ShaderModuleDescriptor, ShaderSource, Surface, SurfaceConfiguration, TextureUsages,
+    MemoryHints, PipelineCompilationOptions, PowerPreference, Queue, RenderPipeline,
+    RequestAdapterOptions, ShaderModuleDescriptor, ShaderSource, Surface, SurfaceConfiguration,
+    TextureUsages,
 };
 
 use winit::{dpi::PhysicalSize, window::Window};
@@ -78,6 +79,7 @@ impl<'a> Renderer<'a> {
                 label: None,
                 required_features: Features::empty(),
                 required_limits: Limits::default(),
+                memory_hints: MemoryHints::default(),
             },
             None,
         ))
@@ -238,6 +240,7 @@ impl<'a> Renderer<'a> {
                 alpha_to_coverage_enabled: false,
             },
             multiview: None,
+            cache: None,
         });
 
         let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
