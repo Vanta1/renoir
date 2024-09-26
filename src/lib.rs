@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{any::Any, sync::Arc};
 use winit::{
     application::ApplicationHandler,
     event::{DeviceEvent, WindowEvent},
@@ -29,6 +29,8 @@ pub struct RenoirApp {
     // this type is only used here, and only one can exist in the entire program, so idc if it's complex
     #[allow(clippy::type_complexity)]
     run_fn: Option<Box<dyn FnMut(&mut RenoirAppState)>>,
+    #[allow(clippy::type_complexity)]
+    setup_fn: Option<Box<dyn FnOnce(&mut RenoirAppState)>>,
 }
 
 impl RenoirApp {
@@ -37,8 +39,13 @@ impl RenoirApp {
             renderer: None,
             window: None,
             run_fn: None,
+            setup_fn: None,
             state: RenoirAppState::new(),
         }
+    }
+
+    pub fn setup(&mut self, setup_fn: impl FnOnce(&mut RenoirAppState) + 'static) {
+        self.setup_fn = Some(Box::new(setup_fn));
     }
 
     pub fn run(&mut self, run_fn: impl FnMut(&mut RenoirAppState) + 'static) {

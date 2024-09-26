@@ -1,3 +1,5 @@
+use hecs::World;
+
 pub mod camera;
 pub mod flow;
 pub mod input;
@@ -13,21 +15,23 @@ use crate::state::window_options::WindowOptions;
 /// RenoirAppState contains everything that the game dev can modify and read while the app is running.
 #[derive(Default)]
 pub struct RenoirAppState {
-    pub window_options: WindowOptions,
-    pub input: RenoirInput,
-    pub time: DeltaTime,
-    pub flow: Flow,
     pub camera: CameraController,
+    pub input: RenoirInput,
+    pub flow: Flow,
+    pub time: DeltaTime,
+    pub window_options: WindowOptions,
+    pub world: World,
 }
 
 impl RenoirAppState {
     pub fn new() -> Self {
         Self {
-            window_options: WindowOptions::new(),
-            input: RenoirInput::new(),
-            time: DeltaTime::new(),
-            flow: Flow::new(),
             camera: CameraController::new(),
+            input: RenoirInput::new(),
+            flow: Flow::new(),
+            time: DeltaTime::new(),
+            window_options: WindowOptions::new(),
+            world: World::new(),
         }
     }
 

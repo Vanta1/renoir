@@ -7,13 +7,14 @@ edition = "2021"
 anyhow = "1.0.86"
 bytemuck = { version = "1.16.0", features = ["derive"] }
 env_logger = "0.11.3"
+hecs = "0.10.5"
 log = "0.4.21"
 nalgebra = { version = "0.32.5", features = ["bytemuck"] }
 pollster = "0.3.0"
 raw-window-handle = "0.6.2"
 strum = { version = "0.26.3", features = [ "derive" ] }
 wgpu = "0.20.0"
-winit = "0.30.0"
+winit = "0.30.5"
 
 [dependencies.image]
 version = "0.24"
