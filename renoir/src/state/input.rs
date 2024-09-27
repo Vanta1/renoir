@@ -1,6 +1,6 @@
 use strum::EnumCount;
 use winit::{
-    event::{ElementState, MouseButton, MouseScrollDelta},
+    event::{ElementState, MouseButton, MouseScrollDelta, WindowEvent},
     keyboard::PhysicalKey,
 };
 
@@ -94,6 +94,21 @@ impl RenoirInput {
             key_stream: Vec::new(),
             prev_modifiers_state: winit::keyboard::ModifiersState::empty(),
             mouse: MouseState::default(),
+        }
+    }
+
+    pub(crate) fn process_events(&mut self, event: WindowEvent) {
+        match event {
+            WindowEvent::ModifiersChanged(modifiers) => {
+                self.set_mods(modifiers.state());
+            }
+            WindowEvent::KeyboardInput { event, .. } => {
+                self.set_key(event);
+            }
+            WindowEvent::MouseInput { state, button, .. } => {
+                self.set_mouse_button(state, button);
+            }
+            _ => {}
         }
     }
 

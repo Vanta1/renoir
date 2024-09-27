@@ -10,15 +10,15 @@ mod math;
 mod render;
 mod state;
 
+use crate::state::app_state::RenoirAppState;
 use render::renderer::Renderer;
-use state::RenoirAppState;
 
 pub mod prelude {
     pub use crate::math::prelude::*;
+    pub use crate::state::app_state::RenoirAppState;
     pub use crate::state::camera::TransformSpace;
     pub use crate::state::input::{Key, MouseBtn};
     pub use crate::state::window_options::WindowOptions;
-    pub use crate::state::RenoirAppState;
     pub use crate::RenoirApp;
 }
 
@@ -113,14 +113,10 @@ impl ApplicationHandler for RenoirApp {
             }
 
             // Renoir uses a custom input system so that users don't have to deal with handling WindowEvents, it reads all inputs before running the main game loop and processes them with the RenoirInput structure
-            WindowEvent::ModifiersChanged(modifiers) => {
-                self.state.input.set_mods(modifiers.state());
-            }
-            WindowEvent::KeyboardInput { event, .. } => {
-                self.state.input.set_key(event);
-            }
-            WindowEvent::MouseInput { state, button, .. } => {
-                self.state.input.set_mouse_button(state, button);
+            event @ (WindowEvent::ModifiersChanged { .. }
+            | WindowEvent::KeyboardInput { .. }
+            | WindowEvent::MouseInput { .. }) => {
+                self.state.input.process_events(event);
             }
 
             WindowEvent::RedrawRequested => {
@@ -137,16 +133,16 @@ impl ApplicationHandler for RenoirApp {
                 // unwrapping is safe here as a RedrawRequested event cannot happen before the developer specifies a run_fn when calling RenoirApp::run()
                 self.run_fn.as_mut().unwrap()(&mut self.state);
 
+                // if after running the main function the user has decided the application should close, close it.
+                if self.state.flow.should_close() {
+                    event_loop.exit()
+                }
+
                 // TODO: check if settings have changed before reapplying
                 // apply WindowOptions to Window
                 self.state
                     .window_options
                     .apply_to(self.window.as_ref().unwrap());
-
-                // if after running the main function the user has decided the application should close, close it.
-                if self.state.flow.should_close() {
-                    event_loop.exit()
-                }
 
                 // TODO: this is producing multiple inputs for a held key, which may be the desired behavior but I need to think it through
                 if !self.state.input.key_stream.is_empty() {
@@ -171,6 +167,7 @@ impl ApplicationHandler for RenoirApp {
                     println!("Renderer wasn't initialized prior to trying to render.. ??");
                 }
 
+                // even though ControlFlow is set to Poll this is still necessary, which i dont quite understand
                 self.window.as_ref().unwrap().request_redraw();
             }
             _ => {}

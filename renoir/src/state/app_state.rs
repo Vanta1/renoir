@@ -1,10 +1,5 @@
+#[cfg(feature = "ecs")]
 use hecs::World;
-
-pub mod camera;
-pub mod flow;
-pub mod input;
-pub mod time;
-pub mod window_options;
 
 use crate::state::camera::CameraController;
 use crate::state::flow::Flow;
@@ -20,6 +15,7 @@ pub struct RenoirAppState {
     pub flow: Flow,
     pub time: DeltaTime,
     pub window_options: WindowOptions,
+    #[cfg(feature = "ecs")]
     pub world: World,
 }
 
@@ -31,6 +27,7 @@ impl RenoirAppState {
             flow: Flow::new(),
             time: DeltaTime::new(),
             window_options: WindowOptions::new(),
+            #[cfg(feature = "ecs")]
             world: World::new(),
         }
     }
