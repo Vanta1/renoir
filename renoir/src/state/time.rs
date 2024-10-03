@@ -8,8 +8,7 @@ pub struct DeltaTime {
 impl DeltaTime {
     pub fn new() -> Self {
         Self {
-            delta_time: 0.,
-            prev_time: Instant::now(),
+            ..Default::default()
         }
     }
 
@@ -25,6 +24,9 @@ impl DeltaTime {
 
 impl Default for DeltaTime {
     fn default() -> Self {
-        Self::new()
+        Self {
+            delta_time: 0.,
+            prev_time: Instant::now(),
+        }
     }
 }

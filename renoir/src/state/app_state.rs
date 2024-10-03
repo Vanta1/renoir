@@ -1,11 +1,11 @@
-#[cfg(feature = "ecs")]
-use hecs::World;
-
 use crate::state::camera::CameraController;
 use crate::state::flow::Flow;
 use crate::state::input::RenoirInput;
 use crate::state::time::DeltaTime;
 use crate::state::window_options::WindowOptions;
+
+#[cfg(feature = "ecs")]
+use hecs::World;
 
 /// RenoirAppState contains everything that the game dev can modify and read while the app is running.
 #[derive(Default)]

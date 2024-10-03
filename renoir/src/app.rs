@@ -9,15 +9,14 @@ use winit::{
 use crate::render::renderer::Renderer;
 use crate::state::app_state::RenoirAppState;
 
+// these types are only used here, and only one of each can exist in the entire program, so idc if it's complex
+#[allow(clippy::type_complexity)]
 #[derive(Default)]
 pub struct RenoirApp {
     renderer: Option<Renderer<'static>>,
     window: Option<Arc<Window>>,
     state: RenoirAppState,
-    // this type is only used here, and only one can exist in the entire program, so idc if it's complex
-    #[allow(clippy::type_complexity)]
     run_fn: Option<Box<dyn FnMut(&mut RenoirAppState)>>,
-    #[allow(clippy::type_complexity)]
     setup_fn: Option<Box<dyn FnMut(&mut RenoirAppState)>>,
 }
 
