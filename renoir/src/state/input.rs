@@ -129,6 +129,7 @@ impl RenoirInput {
             PhysicalKey::Code(keycode) => {
                 self.keys[keycode as usize] = input.state.into();
                 self.key_stream.push((
+                    // this unwraps safely as Key is a superset of KeyCode (see definition near EOF for more info)
                     Key::from_repr(keycode as usize).unwrap(),
                     input.state.into(),
                 ))
@@ -244,7 +245,7 @@ impl Default for RenoirInput {
     }
 }
 
-/// Taken from winit::keyboard::KeyCode, with additional modifiers and "KeyA" changed to "A" for example
+/// Taken from winit::keyboard::KeyCode with additional modifiers, and "KeyA" changed to "A" for example
 #[derive(Debug, strum::EnumCount, strum::FromRepr)]
 #[allow(dead_code)]
 pub enum Key {

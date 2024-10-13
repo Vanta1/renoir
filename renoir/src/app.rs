@@ -98,7 +98,10 @@ impl ApplicationHandler for RenoirApp {
                 event_loop.exit();
             }
 
-            // Renoir uses a custom input system so that users don't have to deal with handling WindowEvents, it reads all inputs before running the main game loop and processes them with the RenoirInput structure
+            // Renoir uses a custom input system so that users don't have to deal with handling WindowEvents,
+            // it reads all inputs before running the main game loop and processes them with the RenoirInput struct
+            // i havent encountered this @ syntax often so brief explanation: it matches the whole enum variant instead of destructuring into fields.
+            // this also lets me match against several variants which is handy for simplifying this main loop
             event @ (WindowEvent::ModifiersChanged { .. }
             | WindowEvent::KeyboardInput { .. }
             | WindowEvent::MouseInput { .. }) => {
