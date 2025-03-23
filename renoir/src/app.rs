@@ -122,7 +122,7 @@ impl ApplicationHandler for RenoirApp {
                 // unwrapping is safe here as a RedrawRequested event cannot happen before the developer specifies a run_fn when calling RenoirApp::run()
                 self.run_fn.as_mut().unwrap()(&mut self.state);
 
-                // if after running the main function the user has decided the application should close, close it.
+                // if after running the main function the developer has decided the application should close, close it.
                 if self.state.flow.should_close() {
                     event_loop.exit()
                 }

@@ -246,6 +246,8 @@ impl Default for RenoirInput {
 }
 
 /// Taken from winit::keyboard::KeyCode with additional modifiers, and "KeyA" changed to "A" for example
+// TODO: test if this works better than strum
+//#[repr(usize)]
 #[derive(Debug, strum::EnumCount, strum::FromRepr)]
 #[allow(dead_code)]
 pub enum Key {
