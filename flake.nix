@@ -32,13 +32,6 @@
           libxkbcommon
           wayland
           libGL
-          libGL
-          vulkan-headers
-          vulkan-loader
-          vulkan-tools
-          vulkan-tools-lunarg
-          vulkan-extension-layer
-          vulkan-validation-layers
         ];
       in
         with pkgs; {
