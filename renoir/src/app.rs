@@ -18,6 +18,7 @@ pub struct RenoirApp {
     state: RenoirAppState,
     run_fn: Option<Box<dyn FnMut(&mut RenoirAppState)>>,
     setup_fn: Option<Box<dyn FnMut(&mut RenoirAppState)>>,
+    quit_fn: Option<Box<dyn FnMut(&mut RenoirAppState)>>,
 }
 
 impl RenoirApp {
@@ -27,6 +28,7 @@ impl RenoirApp {
             window: None,
             run_fn: None,
             setup_fn: None,
+            quit_fn: None,
             state: RenoirAppState::new(),
         }
     }
@@ -35,11 +37,16 @@ impl RenoirApp {
         self.setup_fn = Some(Box::new(setup_fn));
     }
 
+    pub fn quit(&mut self, quit_fn: impl FnMut(&mut RenoirAppState) + 'static) {
+        self.quit_fn = Some(Box::new(quit_fn));
+    }
+
     pub fn run(&mut self, run_fn: impl FnMut(&mut RenoirAppState) + 'static) {
         let event_loop = EventLoop::new().unwrap();
 
         // recommended for games
         event_loop.set_control_flow(ControlFlow::Poll);
+
         self.run_fn = Some(Box::new(run_fn));
         env_logger::init();
 
@@ -95,6 +102,10 @@ impl ApplicationHandler for RenoirApp {
         match event {
             // TODO: add some way to pass this to the game before the program just quits
             WindowEvent::CloseRequested => {
+                if let Some(quit_fn) = self.quit_fn.as_mut() {
+                    quit_fn(&mut self.state);
+                }
+
                 event_loop.exit();
             }
 

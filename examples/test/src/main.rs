@@ -19,6 +19,8 @@ fn main() {
     // 'ren' is a mutable reference to a RenoirAppState, which is the main way of interacting with the engine.
     // it can be queried (e.g. ren.input.pressed(Key::C)) or edited (ren.camera.set_translate())
     // RenoirApp::setup is run once at the beginning
+    // TODO: I could just refactor the "setup" stage to be an intermediate function, e.g. the user (dev) calls game.run(), within which
+    // they call ren.run(), which starts the actual game. this pattern can be seen in zed's GPUI crate
     game.setup(|ren| {
         println!("Setting up...");
         ren.window_options = WindowOptions {
@@ -27,9 +29,12 @@ fn main() {
             show_cursor: false,
         };
 
+        // available because of the "ecs" feature
         ren.world.spawn((Vec3::new(0., 0., 0.), ObjType::Player));
         ren.world.spawn((Vec3::new(0., 0., 0.), ObjType::Entity));
     });
+
+    game.quit(|_| println!("Exiting..."));
 
     // RenoirApp::run is run every frame
     game.run(move |ren| {

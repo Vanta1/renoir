@@ -73,6 +73,7 @@ impl Camera {
         queue.write_buffer(camera_buffer, 0, bytemuck::cast_slice(&[camera_uniform]));
     }
 }
+
 #[derive(Default)]
 pub struct CameraController {
     pub pos: Point3,
